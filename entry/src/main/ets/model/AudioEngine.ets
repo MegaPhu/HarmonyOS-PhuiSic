@@ -198,7 +198,9 @@ export class AudioEngine {
   static startTracking(): void {
     AudioEngine.tracking = true
     const isPlaying = AppStorage.get<boolean>('isPlaying') ?? false
-    if (isPlaying && AudioEngine.avPlayer !== null) {
+    // Drive the wall-clock position timer whenever playing — independent of
+    // AVPlayer readiness so lyrics/progress advance in the Previewer too.
+    if (isPlaying) {
       AudioEngine.startPositionTimer()
     }
   }

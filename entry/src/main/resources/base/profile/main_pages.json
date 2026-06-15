@@ -11,6 +11,7 @@
     "pages/main/Search",
     "pages/main/Library",
     "pages/main/Premium",
-    "pages/main/Profile"
+    "pages/main/Profile",
+    "pages/main/LanguageDetail"
   ]
 }

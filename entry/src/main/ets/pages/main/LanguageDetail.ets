@@ -140,38 +140,38 @@ struct LanguageDetail {
   private PlaylistCard(track: Track) {
     Column({ space: 10 }) {
       Image(track.artwork)
-        .width(140)
-        .height(140)
+        .width(158)
+        .height(158)
         .objectFit(ImageFit.Cover)
         .borderRadius(MeowRadius.card)
         .clip(true)
         .backgroundColor(MeowColors.solidSurface)
         .border({ width: 1, color: 'rgba(255,255,255,0.08)' })
         .shadow({
-          radius: 14,
+          radius: 18,
           color: MeowColors.shadowNavy,
           offsetX: 0,
-          offsetY: 6
+          offsetY: 8
         })
 
       Column({ space: 3 }) {
         Text(track.title)
-          .fontSize(15)
+          .fontSize(16)
           .fontWeight(FontWeight.Bold)
           .fontColor(MeowColors.textPrimary)
-          .maxLines(2)
+          .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .width(140)
-        Text(track.artist)
-          .fontSize(12)
+          .width(158)
+        Text(`${track.listeners} saves`)
+          .fontSize(13)
           .fontColor(MeowColors.textSecondary)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
-          .width(140)
+          .width(158)
       }
       .alignItems(HorizontalAlign.Start)
     }
-    .width(140)
+    .width(158)
     .alignItems(HorizontalAlign.Start)
     .onClick(async () => {
       await this.openTrack(track)
@@ -245,7 +245,7 @@ struct LanguageDetail {
   @Builder
   private DiscoverSection(tracks: Track[]) {
     Column({ space: 16 }) {
-      this.SectionTitle('Discover')
+      this.SectionTitle('Discover new music')
       Scroll() {
         Row({ space: 16 }) {
           ForEach(tracks, (track: Track) => {
@@ -264,7 +264,7 @@ struct LanguageDetail {
   @Builder
   private TopTracksSection(tracks: Track[]) {
     Column({ space: 16 }) {
-      this.SectionTitle('Top Tracks')
+      this.SectionTitle('Popular')
       Column({ space: 0 }) {
         ForEach(tracks, (track: Track) => {
           this.TrackRow(track)

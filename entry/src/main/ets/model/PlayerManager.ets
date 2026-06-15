@@ -18,7 +18,10 @@ export class PlayerManager {
   }
 
   static playTrack(track: Track): void {
-    PlayerManager.setCurrentTrack(track, true)
+    // Load the selected track paused — Player opens showing Play (▶);
+    // user taps Play to start. Opening Player from the MiniPlayer of an
+    // already-playing track keeps it playing (MiniPlayer does not call this).
+    PlayerManager.setCurrentTrack(track, false)
   }
 
   static togglePlay(isPlaying: boolean): void {

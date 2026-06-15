@@ -3,7 +3,7 @@ import { LyricsCard } from '../../components/LyricsCard'
 import { DEFAULT_TRACK, MUSIC_TRACKS, Track } from '../../model/MusicData'
 import { PlayerManager } from '../../model/PlayerManager'
 import { AudioEngine } from '../../model/AudioEngine'
-import { MeowColors, MeowEffects, MeowRadius, MeowSpacing, MeowTypography } from '../../theme/theme'
+import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme/theme'
 import pasteboard from '@ohos.pasteboard'
 import promptAction from '@ohos.promptAction'
 
@@ -16,7 +16,7 @@ interface LyricLine {
 @Component
 struct Player {
   @StorageLink('currentTrack') @Watch('onCurrentTrackChanged') currentTrack: Track = DEFAULT_TRACK
-  @StorageLink('isPlaying') isPlaying: boolean = false
+  @StorageLink('isPlaying') @Watch('onPlayingChanged') isPlaying: boolean = false
   @StorageLink('likedTrackIds') likedTrackIds: string = ''
   @StorageLink('followedArtistIds') private followedArtistIds: string = ''
   @StorageLink('currentTimeSeconds') elapsedSeconds: number = 0
@@ -39,6 +39,16 @@ struct Player {
     this.elapsedSeconds = Math.max(0, Math.min(this.elapsedSeconds, this.currentTrack.duration))
     this.prevTrackId = this.currentTrack.id
     this.cachedLyrics = this.buildLyrics()
+  }
+
+  private onPlayingChanged(): void {
+    // Keep the position timer running while playing so Lyrics Preview + progress
+    // advance; stop it when paused so they hold at the current line.
+    if (this.isPlaying) {
+      AudioEngine.startTracking()
+    } else {
+      AudioEngine.stopTracking()
+    }
   }
 
   private onCurrentTrackChanged(): void {
@@ -380,43 +390,7 @@ struct Player {
       }
       .width('100%')
       .height(44)
-      .onAreaChange((_old: Area, newArea: Area) => {
-        this.progressBarWidth = newArea.width as number
-      })
-      .onTouch((event: TouchEvent) => {
-        if (event.type === TouchType.Down) {
-          AudioEngine.stopTracking()
-          this.isDragging = true
-          if (event.touches.length > 0 && this.currentTrack.duration > 0) {
-            const width = this.progressBarWidth
-            if (width > 0) {
-              const fraction = Math.max(0, Math.min(1, event.touches[0].x / width))
-              this.dragPosition = Math.floor(fraction * this.currentTrack.duration)
-              this.elapsedSeconds = this.dragPosition
-            }
-          }
-          return
-        }
-        if (event.type === TouchType.Move &&
-          event.touches.length > 0 && this.currentTrack.duration > 0) {
-          const width = this.progressBarWidth
-          if (width > 0) {
-            const fraction = Math.max(0, Math.min(1, event.touches[0].x / width))
-            this.dragPosition = Math.floor(fraction * this.currentTrack.duration)
-            this.elapsedSeconds = this.dragPosition
-          }
-          return
-        }
-        if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
-          if (event.type === TouchType.Up) {
-            this.elapsedSeconds = this.dragPosition
-            AudioEngine.seekTo(this.dragPosition)
-          } else {
-            AudioEngine.startTracking()
-          }
-          this.isDragging = false
-        }
-      })
+      .hitTestBehavior(HitTestMode.None)
 
       Row() {
         Text(this.elapsedLabel())
@@ -453,21 +427,26 @@ struct Player {
   private PlayPauseButton() {
     Stack({ alignContent: Alignment.Center }) {
       Text(this.isPlaying ? 'Ⅱ' : '▶')
-        .fontSize(28)
+        .fontSize(26)
         .fontWeight(FontWeight.Bold)
         .fontColor(MeowColors.navyDeep)
+        .translate({ x: this.isPlaying ? 0 : 2 })
     }
-    .width(60)
-    .height(60)
-    .borderRadius(30)
-    .backgroundColor(MeowColors.textPrimary)
-    .shadow({
-      radius: this.isPlaying ? MeowEffects.glowBlur : 0,
-      color: this.isPlaying ? this.currentTrack.accentSoft : 'rgba(0,0,0,0)',
-      offsetX: 0,
-      offsetY: 0
+    .width(64)
+    .height(64)
+    .borderRadius(32)
+    .linearGradient({
+      angle: 145,
+      colors: [['#FFFFFF', 0.0], ['#E8E8F2', 1.0]]
     })
-    .animation({ duration: 500, curve: Curve.EaseInOut })
+    .border({ width: 1, color: 'rgba(255,255,255,0.65)' })
+    .shadow({
+      radius: this.isPlaying ? 22 : 14,
+      color: this.currentTrack.accent,
+      offsetX: 0,
+      offsetY: 6
+    })
+    .animation({ duration: 400, curve: Curve.EaseInOut })
     .hitTestBehavior(HitTestMode.Block)
     .onClick(() => {
       this.togglePlay()

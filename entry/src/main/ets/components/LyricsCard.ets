@@ -27,42 +27,38 @@ export struct LyricsCard {
     return Math.min(activeIndex, this.track.lyrics.length - 1)
   }
 
+  // Always return exactly 3 slots — previous / active / next — using empty
+  // placeholders for out-of-range indices so the container height never jumps.
   private visibleLyrics(activeIndex: number): VisibleLyric[] {
     const lines: VisibleLyric[] = []
-    const startIndex = Math.max(0, activeIndex - 1)
-    const endIndex = Math.min(this.track.lyrics.length - 1, activeIndex + 2)
-    for (let i = startIndex; i <= endIndex; i++) {
-      lines.push({ index: i, text: this.track.lyrics[i] })
+    for (let offset = -1; offset <= 1; offset++) {
+      const i = activeIndex + offset
+      if (i >= 0 && i < this.track.lyrics.length) {
+        lines.push({ index: i, text: this.track.lyrics[i] })
+      } else {
+        lines.push({ index: i, text: '' })
+      }
     }
     return lines
   }
 
-  private lineOpacity(index: number, activeIndex: number): number {
-    const distance = Math.abs(index - activeIndex)
-    if (distance === 0) {
-      return 1
-    }
-    if (distance === 1) {
-      return 0.52
-    }
-    return 0.32
-  }
-
   @Builder
   private LyricLines(activeIdx: number) {
-    Column({ space: 9 }) {
+    Column({ space: 8 }) {
       ForEach(this.visibleLyrics(activeIdx), (line: VisibleLyric) => {
         Text(line.text.length > 0 ? line.text : ' ')
-          .fontSize(line.index === activeIdx ? 19 : 14)
+          .fontSize(line.index === activeIdx ? 18 : 13)
           .fontWeight(line.index === activeIdx ? FontWeight.Bold : FontWeight.Regular)
-          .fontColor(line.index === activeIdx ? MeowColors.textPrimary : MeowColors.textSecondary)
-          .opacity(this.lineOpacity(line.index, activeIdx))
-          .maxLines(line.index === activeIdx ? 2 : 1)
+          .fontColor(line.index === activeIdx ? MeowColors.textPrimary : 'rgba(255,255,255,0.45)')
+          .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
           .width('100%')
+          .animation({ duration: 220, curve: Curve.EaseOut })
       }, (line: VisibleLyric) => `${this.track.id}-${line.index}`)
     }
     .width('100%')
+    .height(82)
+    .justifyContent(FlexAlign.Center)
     .alignItems(HorizontalAlign.Start)
   }
 
@@ -94,7 +90,7 @@ export struct LyricsCard {
       offsetX: 0,
       offsetY: 10
     })
-    .animation({ duration: 250, curve: Curve.EaseOut })
+    .animation({ duration: 220, curve: Curve.EaseOut })
     .onClick(() => {
       this.clickAction()
     })

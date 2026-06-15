@@ -97,15 +97,19 @@ export struct MiniPlayer {
   private PlayPauseButton() {
     Stack({ alignContent: Alignment.Center }) {
       Row()
-        .width(42)
-        .height(42)
-        .borderRadius(21)
-        .backgroundColor(MeowColors.textPrimary)
+        .width(46)
+        .height(46)
+        .borderRadius(23)
+        .linearGradient({
+          angle: 145,
+          colors: [['#FFFFFF', 0.0], ['#E8E8F2', 1.0]]
+        })
+        .border({ width: 1, color: 'rgba(255,255,255,0.65)' })
         .shadow({
-          radius: this.isPlaying ? 16 : 0,
-          color: this.currentTrack.accentSoft,
+          radius: this.isPlaying ? 16 : 9,
+          color: this.currentTrack.accent,
           offsetX: 0,
-          offsetY: 0
+          offsetY: 4
         })
         .animation({ duration: 400, curve: Curve.EaseInOut })
         .hitTestBehavior(HitTestMode.None)
