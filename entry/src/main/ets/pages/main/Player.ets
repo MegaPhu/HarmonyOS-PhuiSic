@@ -277,10 +277,10 @@ struct Player {
       offsetY: 10
     })
     .scale({
-      x: this.isPlaying ? 1 : 0.94,
-      y: this.isPlaying ? 1 : 0.94
+      x: this.isPlaying ? 0.85 : 1,
+      y: this.isPlaying ? 0.85 : 1
     })
-    .animation({ duration: 500, curve: Curve.EaseInOut })
+    .animation({ duration: 450, curve: Curve.Friction })
     .parallelGesture(
       PanGesture({ direction: PanDirection.Horizontal, distance: 44 })
         .onActionEnd((event: GestureEvent) => {
