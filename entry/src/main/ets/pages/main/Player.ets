@@ -31,6 +31,7 @@ struct Player {
   @State private isDragging: boolean = false
   @State private dragPosition: number = 0
   @State private progressBarWidth: number = 0
+  @State private playPressed: boolean = false
   @State private cachedLyrics: LyricLine[] = []
   private prevTrackId: string = ''
   private lastTrackChangeMs: number = 0
@@ -390,7 +391,43 @@ struct Player {
       }
       .width('100%')
       .height(44)
-      .hitTestBehavior(HitTestMode.None)
+      .onAreaChange((_old: Area, newArea: Area) => {
+        this.progressBarWidth = newArea.width as number
+      })
+      .onTouch((event: TouchEvent) => {
+        if (event.type === TouchType.Down) {
+          AudioEngine.stopTracking()
+          this.isDragging = true
+          if (event.touches.length > 0 && this.currentTrack.duration > 0) {
+            const width = this.progressBarWidth
+            if (width > 0) {
+              const fraction = Math.max(0, Math.min(1, event.touches[0].x / width))
+              this.dragPosition = Math.floor(fraction * this.currentTrack.duration)
+              this.elapsedSeconds = this.dragPosition
+            }
+          }
+          return
+        }
+        if (event.type === TouchType.Move &&
+          event.touches.length > 0 && this.currentTrack.duration > 0) {
+          const width = this.progressBarWidth
+          if (width > 0) {
+            const fraction = Math.max(0, Math.min(1, event.touches[0].x / width))
+            this.dragPosition = Math.floor(fraction * this.currentTrack.duration)
+            this.elapsedSeconds = this.dragPosition
+          }
+          return
+        }
+        if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+          if (event.type === TouchType.Up) {
+            this.elapsedSeconds = this.dragPosition
+            AudioEngine.seekTo(this.dragPosition)
+          } else {
+            AudioEngine.startTracking()
+          }
+          this.isDragging = false
+        }
+      })
 
       Row() {
         Text(this.elapsedLabel())
@@ -427,27 +464,28 @@ struct Player {
   private PlayPauseButton() {
     Stack({ alignContent: Alignment.Center }) {
       Text(this.isPlaying ? 'Ⅱ' : '▶')
-        .fontSize(26)
+        .fontSize(this.isPlaying ? 30 : 33)
         .fontWeight(FontWeight.Bold)
-        .fontColor(MeowColors.navyDeep)
+        .fontColor(MeowColors.textPrimary)
+        .textAlign(TextAlign.Center)
         .translate({ x: this.isPlaying ? 0 : 2 })
+        .shadow(this.playPressed
+          ? { radius: 14, color: this.currentTrack.accent, offsetX: 0, offsetY: 0 }
+          : { radius: 0, color: MeowColors.transparent, offsetX: 0, offsetY: 0 })
     }
-    .width(64)
-    .height(64)
-    .borderRadius(32)
-    .linearGradient({
-      angle: 145,
-      colors: [['#FFFFFF', 0.0], ['#E8E8F2', 1.0]]
-    })
-    .border({ width: 1, color: 'rgba(255,255,255,0.65)' })
-    .shadow({
-      radius: this.isPlaying ? 22 : 14,
-      color: this.currentTrack.accent,
-      offsetX: 0,
-      offsetY: 6
-    })
-    .animation({ duration: 400, curve: Curve.EaseInOut })
+    .width(56)
+    .height(56)
+    .scale({ x: this.playPressed ? 0.88 : 1, y: this.playPressed ? 0.88 : 1 })
+    .animation({ duration: 130, curve: Curve.EaseOut })
+    .focusable(false)
     .hitTestBehavior(HitTestMode.Block)
+    .onTouch((event: TouchEvent) => {
+      if (event.type === TouchType.Down) {
+        this.playPressed = true
+      } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+        this.playPressed = false
+      }
+    })
     .onClick(() => {
       this.togglePlay()
     })

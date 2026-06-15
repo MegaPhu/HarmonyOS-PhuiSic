@@ -648,7 +648,836 @@ export const MUSIC_TRACKS: Track[] = [
       "死ぬのがいいわ",
       "死ぬのがいいわ",
       "それでも時々 浮つく my heart",
-      "死んでも治らな治してみせます baby",
+      "死んexport interface Track {\n" +
+        "  id: string\n" +
+        "  title: string\n" +
+        "  artist: string\n" +
+        "  album: string\n" +
+        "  kind: string\n" +
+        "  durationLabel: string\n" +
+        "  duration: number\n" +
+        "  cover: Resource\n" +
+        "  artwork: Resource\n" +
+        "  accent: string\n" +
+        "  accentSoft: string\n" +
+        "  lyrics: string[]\n" +
+        "  timestamps: number[]\n" +
+        "  language: string\n" +
+        "  genre: string\n" +
+        "  mood: string\n" +
+        "  listeners: string\n" +
+        "  plays: string\n" +
+        "  audioSrc: string\n" +
+        "}\n" +
+        "\n" +
+        "export interface MusicCategory {\n" +
+        "  id: string\n" +
+        "  label: string\n" +
+        "  active: boolean\n" +
+        "}\n" +
+        "\n" +
+        "export const MUSIC_CATEGORIES: MusicCategory[] = [\n" +
+        "  { id: '1', label: 'All', active: true },\n" +
+        "  { id: '2', label: 'Thai', active: false },\n" +
+        "  { id: '3', label: 'Japanese', active: false },\n" +
+        "  { id: '4', label: 'International', active: false }\n" +
+        "]\n" +
+        "\n" +
+        "export const MUSIC_TRACKS: Track[] = [\n" +
+        "  {\n" +
+        "    id: '1',\n" +
+        "    title: 'NO ERA AMOR',\n" +
+        "    artist: 'DJ Asul',\n" +
+        "    album: 'Spanish Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '1:45',\n" +
+        "    duration: 105,\n" +
+        "    cover: $r('app.media.cover_no_era_amor_song'),\n" +
+        "    artwork: $r('app.media.cover_no_era_amor_song'),\n" +
+        "    accent: '#E8192C',\n" +
+        "    accentSoft: '#4A0E14',\n" +
+        "    audioSrc: 'audio/no_era_amor.mp3',\n" +
+        "    lyrics: [\n" +
+        "      'No era amor',\n" +
+        "      'No era amor',\n" +
+        "      'Eso fue lo que dijiste tú',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      'Oh, oh, amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      'Oh, oh, amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'No era amor',\n" +
+        "      'Amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      'Oh, oh, amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'No era amor',\n" +
+        "      'Eso fue lo que dijiste tú',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'No era amor',\n" +
+        "      'Pero a mí sí me partió en dos',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      'Oh, oh, amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      'Oh, oh, amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'No era amor',\n" +
+        "      'Pero a mí sí me partió en dos',\n" +
+        "      '',\n" +
+        "      'No era amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      'Oh, oh, amor',\n" +
+        "      'Oh-oh-oh, amor',\n" +
+        "      '',\n" +
+        "      'No era amor'\n" +
+        "    ],\n" +
+        "    timestamps: [10, 2220, 4540, 9250, 11310, 13650, 16080, 18530, 20460, 22850, 25290, 27920, 30160, 32980, 34360, 37260, 39100, 41570, 43930, 46400, 48770, 51050, 55620, 58000, 60250, 65020, 67080, 69310, 71660, 74380, 76390, 78570, 81000, 83630, 85910, 88310, 93080, 95000, 97350, 99650, 102350],\n" +
+        "    language: 'Spanish',\n" +
+        "    genre: 'Phonk',\n" +
+        "    mood: 'Sad',\n" +
+        "    listeners: '10.8M',\n" +
+        "    plays: '1.2B',\n" +
+        "  },\n" +
+        "\n" +
+        "  {\n" +
+        "    id: '2',\n" +
+        "    title: '我会等',\n" +
+        "    artist: '承桓',\n" +
+        "    album: 'Chinese Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '3:23',\n" +
+        "    duration: 203,\n" +
+        "    cover: $r('app.media.cover_wo_hui_deng_song'),\n" +
+        "    artwork: $r('app.media.cover_wo_hui_deng_song'),\n" +
+        "    accent: '#4EB5E0',\n" +
+        "    accentSoft: '#163A50',\n" +
+        "    audioSrc: 'audio/wo_hui_deng.mp3',\n" +
+        "    lyrics: [\n" +
+        "      '我想學一個遨游太空的魔法',\n" +
+        "      '把所有心願都在夜空種下',\n" +
+        "      '陪著所有星星在夢裡越長越大',\n" +
+        "      '',\n" +
+        "      '我想風也不知道它該要去哪',\n" +
+        "      '我想落葉也會偷偷想家',\n" +
+        "      '學會了眼淚當做汗水偷偷地擦',\n" +
+        "      '',\n" +
+        "      '我會等枯樹生出芽 開出新的花',\n" +
+        "      '等著陽光刺破黑暗 第一縷朝霞',\n" +
+        "      '我會等一場雨落下 把回憶都沖刷',\n" +
+        "      '再與你一起去看外面世界到底多大',\n" +
+        "      '',\n" +
+        "      '我會等冬的雪融化 蒲扇裡的夏',\n" +
+        "      '守著深夜裡的星星 眨眼不說話',\n" +
+        "      '我會等故事裡的你 再給我講笑話',\n" +
+        "      '相信美夢和你 總有一天會預先到達',\n" +
+        "      '',\n" +
+        "      '我想學一種敘寫未來的魔法',\n" +
+        "      '把所有未來都寫在我筆下',\n" +
+        "      '想過給你最完美的回答',\n" +
+        "      '',\n" +
+        "      '我想雨也不知道何時能停下',\n" +
+        "      '再堅強的人也會偷偷想家',\n" +
+        "      '學會了眼淚當做汗水偷偷地擦',\n" +
+        "      '',\n" +
+        "      '我會等枯樹生出芽 開出新的花',\n" +
+        "      '等著陽光刺破黑暗 第一縷朝霞',\n" +
+        "      '我會等一場雨落下 把回憶都沖刷',\n" +
+        "      '再與你一起去看外面世界到底多大',\n" +
+        "      '',\n" +
+        "      '我會等冬的雪融化 蒲扇裡的夏',\n" +
+        "      '守著深夜裡的星星 眨眼不說話',\n" +
+        "      '我會等故事裡的你 再給我講笑話',\n" +
+        "      '相信美夢和你 總有一天會預先到達',\n" +
+        "      '',\n" +
+        "      '我會等枯樹生出芽 開出新的花',\n" +
+        "      '等著陽光刺破黑暗 第一縷朝霞',\n" +
+        "      '我會等一場雨落下 把回憶都沖刷',\n" +
+        "      '再與你一起去看外面世界到底多大',\n" +
+        "      '',\n" +
+        "      '我會等冬的雪融化 蒲扇裡的夏',\n" +
+        "      '守著深夜裡的星星 眨眼不說話',\n" +
+        "      '我會等故事裡的你 再給我講笑話',\n" +
+        "      '相信美夢和你 總有一天會預先到達'\n" +
+        "    ],\n" +
+        "    timestamps: [17870, 21550, 24190, 33240, 36870, 39760, 47550, 51430, 55250, 59140, 63000, 66860, 70770, 74610, 95180, 98850, 101710, 110630, 114310, 117170, 124990, 128890, 132700, 136520, 140430, 144380, 148050, 152040, 159800, 163700, 167420, 171480, 175250, 179120, 183010, 186920],\n" +
+        "    language: 'Chinese',\n" +
+        "    genre: 'Pop',\n" +
+        "    mood: 'Romantic',\n" +
+        "    listeners: '3.2M',\n" +
+        "    plays: '890M',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '3',\n" +
+        "    title: 'รถของเล่น',\n" +
+        "    artist: 'Tiger',\n" +
+        "    album: 'Thai Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '3:48',\n" +
+        "    duration: 228,\n" +
+        "    cover: $r('app.media.cover_toy_car_song'),\n" +
+        "    artwork: $r('app.media.cover_toy_car_song'),\n" +
+        "    accent: '#C49A6A',\n" +
+        "    accentSoft: '#3D2A18',\n" +
+        "    audioSrc: 'audio/toy_car.mp3',\n" +
+        "    lyrics: [\n" +
+        "      'พ่อครับ พ่อจําได้ไหมในวันที่ผมยังเป็นเด็ก กับรถคันเล็กคันโปรดนั้น',\n" +
+        "      'สุขใจอยู่บนถนนที่มีในจินตนาการ แค่ไขลานแล้วให้วิ่งไป',\n" +
+        "      'จนวันที่เห็นเพื่อนมีคันใหม่ เป็นรถที่วิ่งไกลและเร็วกว่า',\n" +
+        "      'พ่อจําได้ไหมผมทําไงวันนั้น เพื่อของที่ผมปรารถนา',\n" +
+        "      'ผมร้องผมงอแงจนกว่าพ่อตามใจ',\n" +
+        "      '',\n" +
+        "      'มันแค่ทําน้ําตาให้ไหลแค่ร้องไห้ดังดัง เท่านั้นก็ได้ทุกอย่างดังต้องการ',\n" +
+        "      'ได้มีรถของเล่นที่เหมือนกับเพื่อนเขามีกัน ก็รู้พ่อทนไม่นานที่เห็นผมเสียใจ',\n" +
+        "      '',\n" +
+        "      'ผ่านมาก็เริ่มสงสัยว่าตัวกับใจนี้โตเกินวัยหรือเปล่า นี่คือเหงาหรือใจมันใหญ่ไป',\n" +
+        "      'พ่อครับ เขาว่าความรักนั้นมาเติมเต็มที่ว่างในใจ อยากรู้ว่ามีขายที่ไหนหรือเปล่า',\n" +
+        "      'ก็เมื่อได้เห็นเพื่อนที่เขารักกัน อย่างนั้นผมควรจะยินดีให้',\n" +
+        "      'แต่ปัญหาเพราะว่าเธอคนนั้นผมรักของผมอยู่มากมาย',\n" +
+        "      'แล้วผมต้องทํายังไงให้เขาทิ้งกัน',\n" +
+        "      '',\n" +
+        "      'มันต้องใช้น้ําตาแค่ไหนต้องร้องไห้กี่ครั้ง ให้เขาและเธอทิ้งขว้างความรักแล้วเลิกลา',\n" +
+        "      'ให้เธอเห็นว่ารักของผมให้เธอได้มากกว่า ต้องใช้สักกี่น้ําตาให้เธอเห็นใจ',\n" +
+        "      '',\n" +
+        "      'ที่เคยบอกว่าให้รักใครไป สุดท้ายจะได้เหมือนกันกลับคืนมา',\n" +
+        "      'แต่เอาจริงๆเหมือนมันมี ที่บางทีให้ทั้งใจก็ไม่มีความหมาย',\n" +
+        "      'ทุ่มเทให้เท่าไรเธอไม่ยอมขาย แล้วผมต้องทํายังไงพ่อช่วยผมที',\n" +
+        "      'บอกได้ไหม',\n" +
+        "      '',\n" +
+        "      'ว่ามันต้องใช้น้ําตาแค่ไหนต้องร้องไห้กี่ครั้ง ให้เขาและเธอทิ้งขว้างความรักแล้วเลิกลา',\n" +
+        "      'ให้เธอเห็นว่ารักของผมให้เธอได้มากกว่า ต้องใช้สักกี่น้ําตาให้เธอเห็นใจ',\n" +
+        "      '',\n" +
+        "      'สุดท้ายมันคือที่เธอไม่สนใจ'\n" +
+        "    ],\n" +
+        "    timestamps: [3330, 14330, 26440, 35070, 41850, 46590, 57580, 70830, 82360, 93000, 102770, 110080, 114410, 125770, 138700, 150250, 157840, 165450, 168070, 179270, 213740],\n" +
+        "    language: 'Thai',\n" +
+        "    genre: 'Pop',\n" +
+        "    mood: 'Romantic',\n" +
+        "    listeners: '2.1M',\n" +
+        "    plays: '540M',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '4',\n" +
+        "    title: 'Kamin',\n" +
+        "    artist: 'EMIN feat.JONY',\n" +
+        "    album: 'Russian Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '3:05',\n" +
+        "    duration: 185,\n" +
+        "    cover: $r('app.media.cover_kamin_song'),\n" +
+        "    artwork: $r('app.media.cover_kamin_song'),\n" +
+        "    accent: '#8B5ED4',\n" +
+        "    accentSoft: '#2D1A4A',\n" +
+        "    audioSrc: 'audio/kamin.mp3',\n" +
+        "    lyrics: [\n" +
+        "      \"V kamine v shest' utra\",\n" +
+        "      \"Fotografiya tvoya\",\n" +
+        "      \"Goryat vospominaniya\",\n" +
+        "      \"O tebe\",\n" +
+        "      \"U kamina v shest' utra\",\n" +
+        "      \"Razbitaya dusha\",\n" +
+        "      \"I vse tvoi obeshchaniya\",\n" +
+        "      \"Pustota\",\n" +
+        "      \"V kamine v shest' utra\",\n" +
+        "      \"Fotografiya tvoya\",\n" +
+        "      \"Goryat vospominaniya\",\n" +
+        "      \"O tebe\",\n" +
+        "      \"U kamina v shest' utra\",\n" +
+        "      \"Razbitaya dusha\",\n" +
+        "      \"I vse tvoi obeshchaniya\",\n" +
+        "      \"Pustota\",\n" +
+        "      \"V kamine v shest' utra\",\n" +
+        "      \"Tvoy mayak podaril mne bol'\",\n" +
+        "      \"Ustal ya zhit', vse obidy taya\",\n" +
+        "      \"Ukhodi, za soboy zakroy\",\n" +
+        "      \"Skol'ko by ya ni prosil\",\n" +
+        "      \"Nu ty zhe znala\",\n" +
+        "      \"Chto menya teryala\",\n" +
+        "      \"Ya bosikom po steklam\",\n" +
+        "      \"Begal tak upryamo\",\n" +
+        "      \"Yesli by ne tvoy milyy golosok\",\n" +
+        "      \"Ya by upal, sdelav posledniy vzdokh\",\n" +
+        "      \"I zvezdy mirno padali\",\n" +
+        "      \"Kak budto dlya menya\",\n" +
+        "      \"Ya kazhdyy raz zagadyval\",\n" +
+        "      \"Tebya ne poteryat'\",\n" +
+        "      \"No bol'she ne mogu\",\n" +
+        "      \"Ya prosto muchayu sebya\",\n" +
+        "      \"Teper' ty bol'she ne moya\",\n" +
+        "      \"V kamine v shest' utra\",\n" +
+        "      \"Fotografiya tvoya\",\n" +
+        "      \"Goryat vospominaniya\",\n" +
+        "      \"O tebe\",\n" +
+        "      \"U kamina v shest' utra\",\n" +
+        "      \"Razbitaya dusha\",\n" +
+        "      \"I vse tvoi obeshchaniya\",\n" +
+        "      \"Pustota\",\n" +
+        "      \"V kamine v shest' utra\",\n" +
+        "      \"Fotografiya tvoya\",\n" +
+        "      \"Goryat vospominaniya\",\n" +
+        "      \"O tebe\",\n" +
+        "      \"U kamina v shest' utra\",\n" +
+        "      \"Razbitaya dusha\",\n" +
+        "      \"I vse tvoi obeshchaniya\",\n" +
+        "      \"Pustota\"\n" +
+        "    ],\n" +
+        "    timestamps: [690, 3920, 7700, 12430, 15400, 19480, 23320, 27490, 30860, 34510, 38610, 42940, 45710, 49440, 53070, 57880, 61820, 65100, 68120, 72500, 76110, 78540, 79590, 81410, 82890, 85080, 88940, 92640, 94810, 96480, 98590, 100490, 101510, 103060, 107120, 110580, 114720, 118640, 122340, 125540, 130050, 134300, 137200, 140750, 144740, 149210, 152830, 156170, 160260, 164350],\n" +
+        "    language: 'Russian',\n" +
+        "    genre: 'Electronic',\n" +
+        "    mood: 'Romantic',\n" +
+        "    listeners: '5.7M',\n" +
+        "    plays: '1.1B',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '5',\n" +
+        "    title: 'เจ็บจนพอ',\n" +
+        "    artist: 'WanYai',\n" +
+        "    album: 'Thai Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '5:35',\n" +
+        "    duration: 335,\n" +
+        "    cover: $r('app.media.cover_jep_jon_por_song'),\n" +
+        "    artwork: $r('app.media.cover_jep_jon_por_song'),\n" +
+        "    accent: '#7ABAAE',\n" +
+        "    accentSoft: '#243A35',\n" +
+        "    audioSrc: 'audio/jep_jon_por.mp3',\n" +
+        "    lyrics: [\n" +
+        "      'ไม่ต่างอะไรจากวันนั้น',\n" +
+        "      'สิ่งที่เธอทำกับฉัน',\n" +
+        "      'มันเหมือนว่าฉันกำลังดูหนังเรื่องเดิม',\n" +
+        "      'คำที่เธอได้บอกฉัน ฉากเดิมๆ ที่ซ้ำๆ',\n" +
+        "      'ยิ่งย้ำให้ฉันต้องเจ็บอีกเหมือนเดิม',\n" +
+        "      '',\n" +
+        "      'ไม่รู้ หัวใจฉัน',\n" +
+        "      'เหลือที่ว่างให้เธอได้อีกกี่แผล',\n" +
+        "      'ร่องรอยของน้ำตา',\n" +
+        "      'มันทำให้ฉันวันนี้ต้องตัดสินใจ',\n" +
+        "      '',\n" +
+        "      'เจ็บจนพอ เกินที่ใจมันจะทนไหว',\n" +
+        "      'พอแล้วที่เราต้องทนกับความเสียใจ',\n" +
+        "      'พอแล้วที่มีน้ำตา พอแล้วกับการที่ไม่มีค่า',\n" +
+        "      'กับใครที่เขาไม่ได้สนใจ',\n" +
+        "      '',\n" +
+        "      'เจ็บจนพอ เกินที่ใจมันจะทนไหว',\n" +
+        "      'วันนี้ฉันขอแค่เดินออกไปให้ไกล',\n" +
+        "      'พอแล้วที่มีน้ำตา พอแล้วกับการที่ไม่มีค่า',\n" +
+        "      'กับเธอ เจ็บจนพอแล้ว พอสักที',\n" +
+        "      '',\n" +
+        "      'เฝ้าอดทนมาทุกครั้ง',\n" +
+        "      'เจ็บก็ยอมอยู่อย่างนั้น',\n" +
+        "      'เพราะหวังว่าสักวันหนึ่งเธอคงเห็นใจ',\n" +
+        "      'ความเป็นจริงช่างโหดร้าย',\n" +
+        "      'เฝ้าทำดีกลับได้ร้าย',\n" +
+        "      'ยิ่งย้ำให้ฉันต้องเจ็บเหมือนเดิม',\n" +
+        "      '',\n" +
+        "      'ไม่รู้ หัวใจฉัน',\n" +
+        "      'เหลือที่ว่างให้เธอได้อีกกี่แผล',\n" +
+        "      'ร่องรอยของน้ำตา',\n" +
+        "      'มันทำให้ฉันวันนี้ต้องตัดสินใจ',\n" +
+        "      '',\n" +
+        "      'เจ็บจนพอ เกินที่ใจมันจะทนไหว',\n" +
+        "      'พอแล้วที่เราต้องทนกับความเสียใจ',\n" +
+        "      'พอแล้วที่มีน้ำตา พอแล้วกับการที่ไม่มีค่า',\n" +
+        "      'กับใครที่เขาไม่ได้สนใจ',\n" +
+        "      '',\n" +
+        "      'เจ็บจนพอ เกินที่ใจมันจะทนไหว',\n" +
+        "      'วันนี้ฉันขอแค่เดินออกไปให้ไกล',\n" +
+        "      'พอแล้วที่มีน้ำตา พอแล้วกับการที่ไม่มีค่า',\n" +
+        "      'กับเธอ เจ็บจนพอแล้ว พอสักที',\n" +
+        "      '',\n" +
+        "      'เจ็บจนพอ เกินที่ใจมันจะทนไหว',\n" +
+        "      'พอแล้วที่เราต้องทนกับความเสียใจ',\n" +
+        "      'พอแล้วที่มีน้ำตา พอแล้วกับการที่ไม่มีค่า',\n" +
+        "      'กับใครที่เขาไม่ได้สนใจ',\n" +
+        "      '',\n" +
+        "      'เจ็บจนพอ เกินที่ใจมันจะทนไหว',\n" +
+        "      'วันนี้ฉันขอแค่เดินออกไปให้ไกล',\n" +
+        "      'พอแล้วที่มีน้ำตา พอแล้วกับการที่ไม่มีค่า',\n" +
+        "      'กับเธอ เจ็บจนพอแล้ว พอสักที'\n" +
+        "    ],\n" +
+        "    timestamps: [11330, 14040, 16730, 22690, 28290, 33690, 39260, 44660, 50730, 57940, 63440, 68220, 74770, 79580, 84800, 90440, 96700, 109170, 111060, 113670, 119270, 122230, 124700, 129630, 135700, 140720, 146630, 151140, 156740, 162210, 168460, 173280, 179060, 184690, 191270, 215750, 220380, 226040, 232120, 236720, 242380, 247870, 254940],\n" +
+        "    language: 'Thai',\n" +
+        "    genre: 'Pop',\n" +
+        "    mood: 'Sad',\n" +
+        "    listeners: '1.8M',\n" +
+        "    plays: '420M',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '6',\n" +
+        "    title: 'Blue',\n" +
+        "    artist: 'Yung Kai',\n" +
+        "    album: 'English Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '3:35',\n" +
+        "    duration: 215,\n" +
+        "    cover: $r('app.media.cover_blue_song'),\n" +
+        "    artwork: $r('app.media.cover_blue_song'),\n" +
+        "    accent: '#5AB8DC',\n" +
+        "    accentSoft: '#183040',\n" +
+        "    audioSrc: 'audio/blue.mp3',\n" +
+        "    lyrics: [\n" +
+        "      \"Your morning eyes, I could stare like watching stars\",\n" +
+        "      \"I could walk you by, and I'll tell without a thought\",\n" +
+        "      \"You'd be mine\",\n" +
+        "      \"Would you mind if i took your hand tonight\",\n" +
+        "      \"Know you're all that I want this life\",\n" +
+        "      \"I'll imagine we fell in love\",\n" +
+        "      \"I'll nap under moonlight skies with you\",\n" +
+        "      \"I think I'll picture us, you with the waves\",\n" +
+        "      \"The oceans colors on your face\",\n" +
+        "      \"I'll leave my heart with your air\",\n" +
+        "      \"So let me fly with you\",\n" +
+        "      \"Will you be forever with me\",\n" +
+        "      \"My love will always stay by you\",\n" +
+        "      \"I'll keep it safe so don't you worry a thing, I'll tell you i love you more\",\n" +
+        "      \"It's stuck with you forever so promise you won't let it go\",\n" +
+        "      \"I'll trust the universe will always bring me to you\",\n" +
+        "      \"I'll imagine we fell in love\",\n" +
+        "      \"I'll nap under moonlight skies with you\",\n" +
+        "      \"I think I'll picture us, you with the waves\",\n" +
+        "      \"The oceans colors on your face\",\n" +
+        "      \"I'll leave my heart with your air\",\n" +
+        "      \"So let me fly with you\",\n" +
+        "      \"Will you be forever with me\"\n" +
+        "    ],\n" +
+        "    timestamps: [18740, 25940, 32500, 34590, 39960, 47750, 50320, 54240, 57870, 61760, 65860, 69110, 76950, 106460, 112100, 121000, 127770, 136290, 138870, 142720, 146330, 149970, 154360, 157740],\n" +
+        "    language: 'English',\n" +
+        "    genre: 'Pop',\n" +
+        "    mood: 'Chill',\n" +
+        "    listeners: '28.4M',\n" +
+        "    plays: '3.2B',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '7',\n" +
+        "    title: '月空中最亮的星',\n" +
+        "    artist: 'Escape Plan',\n" +
+        "    album: 'Chinese Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '4:34',\n" +
+        "    duration: 274,\n" +
+        "    cover: $r('app.media.cover_yue_liang_song'),\n" +
+        "    artwork: $r('app.media.cover_yue_liang_song'),\n" +
+        "    accent: '#6E98C0',\n" +
+        "    accentSoft: '#1A2535',\n" +
+        "    audioSrc: 'audio/yue_liang.mp3',\n" +
+        "    lyrics: [\n" +
+        "      '夜空中最亮的星能否聽清',\n" +
+        "      '那仰望的人心底的孤獨和歎息?',\n" +
+        "      '夜空中最亮的星能否記起',\n" +
+        "      '曾與我同行 消失在風裡的身影?',\n" +
+        "      '',\n" +
+        "      '我祈禱擁有一顆透明的心靈',\n" +
+        "      '和會流淚的眼睛',\n" +
+        "      '給我再去相信的勇氣',\n" +
+        "      '哦 越過謊言去擁抱你',\n" +
+        "      '',\n" +
+        "      '每當我找不到存在的意義',\n" +
+        "      '每當我迷失在黑夜裡',\n" +
+        "      '哦 夜空中最亮的星',\n" +
+        "      '請指引我靠近你',\n" +
+        "      '',\n" +
+        "      '夜空中最亮的星是否知道',\n" +
+        "      '曾與我同行的身影如今在哪裡?',\n" +
+        "      '夜空中最亮的星是否在意',\n" +
+        "      '是等太陽升起 還是意外先來臨?',\n" +
+        "      '',\n" +
+        "      '我寧願所有痛苦都留在心裡',\n" +
+        "      '也不願忘記你的眼睛',\n" +
+        "      '給我再去相信的勇氣',\n" +
+        "      '哦 越過謊言去擁抱你',\n" +
+        "      '',\n" +
+        "      '每當我找不到存在的意義',\n" +
+        "      '每當我迷失在黑夜裡',\n" +
+        "      '哦 夜空中最亮的星',\n" +
+        "      '哦 請照亮我前行',\n" +
+        "      '',\n" +
+        "      '我祈禱擁有一顆透明的心靈',\n" +
+        "      '和會流淚的眼睛',\n" +
+        "      '給我再去相信的勇氣',\n" +
+        "      '哦 越過謊言去擁抱你',\n" +
+        "      '',\n" +
+        "      '每當我找不到存在的意義',\n" +
+        "      '每當我迷失在黑夜裡',\n" +
+        "      '哦 夜空中最亮的星',\n" +
+        "      '哦 請照亮我前行',\n" +
+        "      '',\n" +
+        "      '夜空中最亮的星能否聽清',\n" +
+        "      '那仰望的人心底的孤獨和歎息?'\n" +
+        "    ],\n" +
+        "    timestamps: [4520, 13220, 22430, 30890, 38780, 44070, 49450, 52600, 56630, 61440, 65960, 70690, 75580, 84000, 93590, 101560, 109840, 114990, 120690, 123530, 127900, 132560, 136790, 141770, 167890, 174440, 181400, 185310, 190390, 195410, 200720, 205200, 215330, 225350],\n" +
+        "    language: 'Chinese',\n" +
+        "    genre: 'Pop',\n" +
+        "    mood: 'Sad',\n" +
+        "    listeners: '3.4M',\n" +
+        "    plays: '760M',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '8',\n" +
+        "    title: 'วาฬเกยตื้น',\n" +
+        "    artist: 'GUNGUN',\n" +
+        "    album: 'Thai Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '3:35',\n" +
+        "    duration: 215,\n" +
+        "    cover: $r('app.media.cover_whale_song'),\n" +
+        "    artwork: $r('app.media.cover_whale_song'),\n" +
+        "    accent: '#00C8DC',\n" +
+        "    accentSoft: '#0A3840',\n" +
+        "    audioSrc: 'audio/whale.mp3',\n" +
+        "    lyrics: [\n" +
+        "      'มีวาฬตัวหนึ่งลอยว่ายน้ำมา',\n" +
+        "      'ดูเจ็บช้ำทรวงอุรากว่าที่เคย',\n" +
+        "      'มันพยายามตามรักทรามเชย',\n" +
+        "      'แต่สุดท้ายดันมาเกยตื้นน้ำตาย',\n" +
+        "      '',\n" +
+        "      'จงจำไว้ (จงจำไว้)(ฮา)',\n" +
+        "      'ว่ารักใคร (ว่ารักใคร)(ฮา)',\n" +
+        "      'อย่าทำให้ใจต้องเจ็บ (ฮา)',\n" +
+        "      'และโปรดจงจำไว้ (จำไว้)(ฮา)',\n" +
+        "      'ทำไมถึงเสียใจ (ทำไมถึงเสียใจ)',\n" +
+        "      'เพราะเราทำตัวเราเอง',\n" +
+        "      '',\n" +
+        "      'รักก็คือรัก (รักก็คือรัก)',\n" +
+        "      'หลงก็คือหลง (หลงก็คือหลง)',\n" +
+        "      'ถ้าถามชาวประมงก็คงไม่เข้าใจ',\n" +
+        "      'เพราะฉันนั้นเป็นวาฬที่เกย',\n" +
+        "      'ตื้นน้ำตาย',\n" +
+        "      'ใจสลายแหลกลงไปใต้ทะเล',\n" +
+        "      '',\n" +
+        "      'ตัวฉันไม่เคยเรียนรู้มาก่อน',\n" +
+        "      'แม่บังอรจะทำร้ายจนอกตรม',\n" +
+        "      'ดวงใจของฉันช่างแสนระบม',\n" +
+        "      'ด้วยพิษร้ายที่ทำลายจากปากเธอ',\n" +
+        "      '',\n" +
+        "      'ปากบอกว่ารัก (ปากบอกว่ารัก)(ฮา)',\n" +
+        "      'ใจบอกว่าแคร์ (ใจบอกว่าแคร์)(ฮา)',\n" +
+        "      'สุดท้ายไม่เหลียวแลปล่อยฉันเกยตื้นตาย (ฮา)',\n" +
+        "      'และฉันคงต้องยอมปล่อยตัวเธอ (ฮา)',\n" +
+        "      'กลืนน้ำลายกับคำร้ายที่กล่าวไว้ (ฮา)',\n" +
+        "      'ว่า',\n" +
+        "      '',\n" +
+        "      'ว่ารักก็คือรัก (รักก็คือรัก)',\n" +
+        "      'หลงก็คือหลง (หลงก็คือหลง)',\n" +
+        "      'ถ้าถามชาวประมงก็คงไม่เข้าใจ',\n" +
+        "      'เพราะฉันนั้นเป็นวาฬที่เกย',\n" +
+        "      'ตื้นน้ำตาย',\n" +
+        "      'ใจสลายแหลกลงไปใต้ทะเล',\n" +
+        "      '',\n" +
+        "      'เพราะรักก็คือรัก (รักก็คือรัก)',\n" +
+        "      'หลงก็คือหลง (หลงก็คือหลง)',\n" +
+        "      'ถ้าถามชาวประมงก็คงไม่เข้าใจ',\n" +
+        "      'เพราะฉันนั้นเป็นวาฬที่เกย',\n" +
+        "      'ตื้นน้ำตาย',\n" +
+        "      'ใจสลายแหลกลงไปใต้ทะเล',\n" +
+        "      '',\n" +
+        "      'เพราะรักก็คือรัก (รักก็คือรัก)',\n" +
+        "      'หลงก็คือหลง (หลงก็คือหลง)',\n" +
+        "      'ถ้าถามชาวประมงก็คงไม่เข้าใจ',\n" +
+        "      'เพราะฉันนั้นเป็นวาฬที่เกย',\n" +
+        "      'ตื้นน้ำตาย',\n" +
+        "      'ใจสลายแหลกลงไปใต้ทะเล',\n" +
+        "      '',\n" +
+        "      'เพราะฉันนั้นเป็นวาฬที่เกย',\n" +
+        "      'ตื้นน้ำตาย',\n" +
+        "      'และสุดท้ายต้องมาตายเพราะรักเธอ'\n" +
+        "    ],\n" +
+        "    timestamps: [22080, 25810, 31430, 35420, 39750, 42520, 45450, 48980, 51860, 54950, 58730, 61060, 63300, 68090, 71900, 73800, 89270, 92880, 98590, 102490, 106980, 109220, 111520, 116100, 120050, 126320, 130610, 133290, 135550, 140090, 144030, 145620, 150060, 152410, 154700, 159210, 163180, 164820, 188190, 190900, 193000, 197700, 201590, 203350, 207500, 211110, 212860],\n" +
+        "    language: 'Thai',\n" +
+        "    genre: 'Pop',\n" +
+        "    mood: 'Sad',\n" +
+        "    listeners: '5.1M',\n" +
+        "    plays: '980M',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '9',\n" +
+        "    title: 'Die With a Smile',\n" +
+        "    artist: 'Lady Gaga, Bruno Mars',\n" +
+        "    album: 'English Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '4:09',\n" +
+        "    duration: 249,\n" +
+        "    cover: $r('app.media.cover_die_with_a_smile_song'),\n" +
+        "    artwork: $r('app.media.cover_die_with_a_smile_song'),\n" +
+        "    accent: '#1E8EC8',\n" +
+        "    accentSoft: '#0C2A48',\n" +
+        "    audioSrc: 'audio/die_with_a_smile.mp3',\n" +
+        "    lyrics: [\n" +
+        "      \"Ooh, ooh\",\n" +
+        "      \"I, I just woke up from a dream\",\n" +
+        "      \"But you and I had to say goodbye\",\n" +
+        "      \"And I don't know what it all means\",\n" +
+        "      \"But since I survived, I realized\",\n" +
+        "      \"Wherever you go, that's where I'll follow\",\n" +
+        "      \"Nobody's promised tomorrow\",\n" +
+        "      \"So I'ma love you every night like it's the last night\",\n" +
+        "      \"Like it's the last night\",\n" +
+        "      \"If the world was ending, I'd wanna be next to you\",\n" +
+        "      \"If the party was over and our time on Earth was through\",\n" +
+        "      \"I'd wanna hold you just for a while\",\n" +
+        "      \"And die with a smile\",\n" +
+        "      \"If the world was ending, I'd wanna be next to you\",\n" +
+        "      \"(Ooh, ooh)\",\n" +
+        "      \"Oh-ooh, lost, lost in the words that we scream\",\n" +
+        "      \"I don't even wanna do this anymore\",\n" +
+        "      \"'Cause you already know what you mean to me\",\n" +
+        "      \"And our love's the only one worth fighting for\",\n" +
+        "      \"Wherever you go, that's where I'll follow\",\n" +
+        "      \"Nobody's promised tomorrow\",\n" +
+        "      \"So I'ma love you every night like it's the last night\",\n" +
+        "      \"Like it's the last night\",\n" +
+        "      \"If the world was ending, I'd wanna be next to you\",\n" +
+        "      \"If the party was over and our time on Earth was through\",\n" +
+        "      \"I'd wanna hold you just for a while\",\n" +
+        "      \"And die with a smile\",\n" +
+        "      \"If the world was ending, I'd wanna be next to you\",\n" +
+        "      \"Right next to you\",\n" +
+        "      \"Next to you\",\n" +
+        "      \"Right next to you\",\n" +
+        "      \"Oh-oh, oh\",\n" +
+        "      \"If the world was ending, I'd wanna be next to you\",\n" +
+        "      \"If the party was over and our time on Earth was through\",\n" +
+        "      \"I'd wanna hold you just for a while\",\n" +
+        "      \"And die with a smile\",\n" +
+        "      \"If the world was ending, I'd wanna be next to you\",\n" +
+        "      \"If the world was ending, I'd wanna be next to you\",\n" +
+        "      \"Ooh, ooh\",\n" +
+        "      \"I'd wanna be next to you\"\n" +
+        "    ],\n" +
+        "    timestamps: [10590, 12840, 17570, 22070, 26660, 31440, 35850, 40650, 44510, 47160, 56180, 66120, 71080, 75150, 90610, 96440, 101010, 104980, 110390, 115100, 119590, 123520, 126130, 135190, 144560, 149540, 153910, 162900, 167530, 172380, 195650, 205130, 214320, 219330, 223400, 232870, 245460],\n" +
+        "    language: 'English',\n" +
+        "    genre: 'Pop',\n" +
+        "    mood: 'Romantic',\n" +
+        "    listeners: '118.5M',\n" +
+        "    plays: '8.4B',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '10',\n" +
+        "    title: 'Shinunoga E-Wa',\n" +
+        "    artist: 'Fujii Kaze',\n" +
+        "    album: 'Japanese Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '3:11',\n" +
+        "    duration: 191,\n" +
+        "    cover: $r('app.media.cover_shinunoga_e_wa_song'),\n" +
+        "    artwork: $r('app.media.cover_shinunoga_e_wa_song'),\n" +
+        "    accent: '#A0A8B8',\n" +
+        "    accentSoft: '#25282E',\n" +
+        "    audioSrc: 'audio/shinunoga_e_wa.mp3',\n" +
+        "    lyrics: [\n" +
+        "      \"指切りげんまん ホラでも吹いたら\",\n" +
+        "      \"針でもなんでも 飲ませていただき Monday\",\n" +
+        "      \"It doesn't matter if it's Sunday\",\n" +
+        "      \"鏡よ鏡よ この世で1番\",\n" +
+        "      \"変わることのない 愛をくれるのはだれ\",\n" +
+        "      \"No need to ask 'cause it's my darling\",\n" +
+        "      \"わたしの最後はあなたがいい\",\n" +
+        "      \"あなたとこのままおサラバするより\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"三度の飯よりあんたがいいのよ\",\n" +
+        "      \"あんたとこのままおサラバするよか\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"それでも時々 浮つく my heart\",\n" +
+        "      \"死んでも治らな治してみせます baby\",\n" +
+        "      \"Yeah, I ain't nothin' but your baby\",\n" +
+        "      \"失って初めて気がつくなんて\",\n" +
+        "      \"そんなダサいこと もうしたないのよ Goodbye\",\n" +
+        "      \"Oh don't you ever say bye-bye\",\n" +
+        "      \"Yeah\",\n" +
+        "      \"わたしの最後はあなたがいい\",\n" +
+        "      \"あなたとこのままおサラバするより\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"三度の飯よりあんたがいいのよ\",\n" +
+        "      \"あんたとこのままおサラバするよか\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"わたしの最後はあなたがいい\",\n" +
+        "      \"あなたとこのままおサラバするより\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"三度の飯よりあんたがいいのよ\",\n" +
+        "      \"あんたとこのままおサラバするよか\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"死ぬのがいいわ\",\n" +
+        "      \"それでも時々浮つく my heart\",\n" +
+        "      \"そんなダサいのは もう要らないのよ bye-bye\",\n" +
+        "      \"I'll always stick with you, my baby\"\n" +
+        "    ],\n" +
+        "    timestamps: [24980, 29140, 32890, 37130, 40490, 45010, 49260, 52550, 55560, 58420, 61450, 64940, 67830, 70450, 73300, 77100, 81310, 85720, 89330, 93390, 96980, 98570, 101150, 104000, 107030, 110040, 113360, 116390, 119480, 146400, 149690, 152760, 155450, 158390, 161990, 164930, 167700, 171060, 174090, 178670],\n" +
+        "    language: 'Japanese',\n" +
+        "    genre: 'Pop',\n" +
+        "    mood: 'Romantic',\n" +
+        "    listeners: '8.7M',\n" +
+        "    plays: '1.9B',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '11',\n" +
+        "    title: 'NIGHT DANCER',\n" +
+        "    artist: 'imase',\n" +
+        "    album: 'Japanese Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '3:30',\n" +
+        "    duration: 210,\n" +
+        "    cover: $r('app.media.cover_night_dancer_song'),\n" +
+        "    artwork: $r('app.media.cover_night_dancer_song'),\n" +
+        "    accent: '#D4F020',\n" +
+        "    accentSoft: '#2C3000',\n" +
+        "    audioSrc: 'audio/night_dancer.mp3',\n" +
+        "    lyrics: [\"どうでもいいような 夜だけど\",\n" +
+        "      \"響めき 煌めきと君も\",\n" +
+        "      \"まだ止まった 刻む針も\",\n" +
+        "      \"入り浸った 散らかる部屋も\",\n" +
+        "      \"変わらないね 思い出しては\",\n" +
+        "      \"二人 歳を重ねてた\",\n" +
+        "      \"また止まった 落とす針を\",\n" +
+        "      \"よく流した 聞き飽きるほど\",\n" +
+        "      \"変わらないね 変わらないで\",\n" +
+        "      \"いられたのは 君だけか\",\n" +
+        "      \"無駄話で はぐらかして\",\n" +
+        "      \"触れた先を ためらうように\",\n" +
+        "      \"足踏みして ズレた針を余所に\",\n" +
+        "      \"揃い始めてた 息が\",\n" +
+        "      \"どうでもいいような 夜だけど\",\n" +
+        "      \"響めき 煌めきと君も （踊ろう）\",\n" +
+        "      \"どうでもいいような 夜だけど ああ\",\n" +
+        "      \"二人刻もう\",\n" +
+        "      \"透き通った 白い肌も\",\n" +
+        "      \"その笑った 無邪気な顔も\",\n" +
+        "      \"変わらないね 変わらないで\",\n" +
+        "      \"いられるのは 今だけか\",\n" +
+        "      \"見つめるほどに\",\n" +
+        "      \"溢れる メモリー\",\n" +
+        "      \"浮つく心に コーヒーを\",\n" +
+        "      \"乱れた髪に 掠れたメロディー\",\n" +
+        "      \"混ざりあってよう もう一度\",\n" +
+        "      \"どうでもいいような 夜だけど\",\n" +
+        "      \"ときめき 色めきと君も （踊ろう）\",\n" +
+        "      \"どうでもいいような 夜だけど ああ\",\n" +
+        "      \"二人刻もう\",\n" +
+        "      \"夜は長い おぼつかない\",\n" +
+        "      \"今にも止まりそうな ミュージック\",\n" +
+        "      \"君といたい 溺れてたい\",\n" +
+        "      \"明日がこなくたって もういいの\",\n" +
+        "      \"どうでもいいような 夜だけど\",\n" +
+        "      \"響めき 煌めきと君も （踊ろう）\",\n" +
+        "      \"どうでもいいような 夜だけど ああ\",\n" +
+        "      \"愛して\",\n" +
+        "      \"どうでもいいから 僕だけを\",\n" +
+        "      \"ふらつき よろめきながらも （踊ろう）\",\n" +
+        "      \"どうでもいいような 夜だけど ああ\",\n" +
+        "      \"二人刻もう\"\n" +
+        "    ],\n" +
+        "    timestamps: [900, 4820, 25520, 29020, 33100, 37290, 41360, 45460, 49440, 53610, 57570, 61710, 65920, 70840, 74640, 78720, 83050, 87480, 106730, 110960, 115050, 119190, 124020, 126160, 128570, 132250, 136860, 140500, 144480, 148530, 152800, 156780, 160850, 164720, 169000, 175250, 179110, 183470, 190410, 191760, 195580, 199890, 204370],\n" +
+        "    language: 'Japanese',\n" +
+        "    genre: 'Electronic',\n" +
+        "    mood: 'Chill',\n" +
+        "    listeners: '2.8M',\n" +
+        "    plays: '380M',\n" +
+        "  },\n" +
+        "  {\n" +
+        "    id: '12',\n" +
+        "    title: '夜に駆ける',\n" +
+        "    artist: 'YOASOBI',\n" +
+        "    album: 'Japanese Songs',\n" +
+        "    kind: 'Single',\n" +
+        "    durationLabel: '4:22',\n" +
+        "    duration: 262,\n" +
+        "    cover: $r('app.media.cover_yoasobi_song'),\n" +
+        "    artwork: $r('app.media.cover_yoasobi_song'),\n" +
+        "    accent: '#E8507A',\n" +
+        "    accentSoft: '#4A1028',\n" +
+        "    audioSrc: 'audio/yoasobi.mp3',\n" +
+        "    lyrics: [\n" +
+        "      \"沈むように溶けてゆくように\",\n" +
+        "      \"二人だけの空が広がる夜に\",\n" +
+        "      \"「さよなら」だけだった\",\n" +
+        "      \"その一言で全てが分かった\",\n" +
+        "      \"日が沈み出した空と君の姿\",\n" +
+        "      \"フェンス越しに重なっていた\",\n" +
+        "      \"初めて会った日から\",\n" +
+        "      \"僕の心の全てを奪った\",\n" +
+        "      \"どこか儚い空気を纏う君は\",\n" +
+        "      \"寂しい目をしてたんだ\",\n" +
+        "      \"いつだってチックタックと\",\n" +
+        "      \"鳴る世界で何度だってさ\",\n" +
+        "      \"触れる心無い言葉うるさい声に\",\n" +
+        "      \"涙が零れそうでも\",\n" +
+        "      \"ありきたりな喜びきっと二人なら見つけられる\",\n" +
+        "      \"騒がしい日々に笑えない君に\",\n" +
+        "      \"思い付く限り眩しい明日を\",\n" +
+        "      \"明けない夜に落ちてゆく前に\",\n" +
+        "      \"僕の手を掴んでほら\",\n" +
+        "      \"忘れてしまいたくて閉じ込めた日々も\",\n" +
+        "      \"抱きしめた温もりで溶かすから\",\n" +
+        "      \"怖くないよいつか日が昇るまで\",\n" +
+        "      \"二人でいよう\",\n" +
+        "      \"君にしか見えない\",\n" +
+        "      \"何かを見つめる君が嫌いだ\",\n" +
+        "      \"見惚れているかのような恋するような\",\n" +
+        "      \"そんな顔が嫌いだ\",\n" +
+        "      \"信じていたいけど信じれないこと\",\n" +
+        "      \"そんなのどうしたってきっと\",\n" +
+        "      \"これからだって いくつもあって\",\n" +
+        "      \"そのたんび怒って 泣いていくの\",\n" +
+        "      \"それでもきっといつかはきっと 僕らはきっと\",\n" +
+        "      \"分かり合えるさ 信じてるよ\",\n" +
+        "      \"もう嫌だって疲れたんだって\",\n" +
+        "      \"がむしゃらに差し伸べた 僕の手を振り払う君\",\n" +
+        "      \"もう嫌だって 疲れたよなんて\",\n" +
+        "      \"本当は僕も言いたいんだ\",\n" +
+        "      \"Ah ほらまたチックタックと\",\n" +
+        "      \"鳴る世界で何度だってさ\",\n" +
+        "      \"君の為に用意した言葉 どれも届かない\",\n" +
+        "      \"「終わりにしたい」だなんてさ\",\n" +
+        "      \"釣られて言葉にした時\",\n" +
+        "      \"君は初めて笑った\",\n" +
+        "      \"騒がしい日々に笑えなくなっていた\",\n" +
+        "      \"僕の目に映る君は綺麗だ\",\n" +
+        "      \"明けない夜に零れた涙も\",\n" +
+        "      \"君の笑顔に溶けていく\",\n" +
+        "      \"変わらない日々に泣いていた僕を\",\n" +
+        "      \"君は優しく終わりへと誘う\",\n" +
+        "      \"沈むように溶けてゆくように\",\n" +
+        "      \"染み付いた霧が晴れる\",\n" +
+        "      \"忘れてしまいたくて閉じ込めた日々に\",\n" +
+        "      \"差し伸べてくれた君の手を取る\",\n" +
+        "      \"涼しい風が空を泳ぐように今 吹き抜けていく\",\n" +
+        "      \"繋いだ手を離さないでよ\",\n" +
+        "      \"二人いま 夜に駆け出していく\"\n" +
+        "    ],\n" +
+        "    timestamps: [900, 7730, 30400, 33230, 36930, 41340, 45240, 48210, 51760, 56080, 59760, 61490, 63370, 66260, 68080, 74140, 78230, 82020, 85580, 88570, 92940, 96960, 101150, 117740, 120200, 123660, 128220, 131870, 133330, 135680, 137210, 139340, 142020, 159710, 162170, 167360, 169850, 174110, 175970, 177820, 181090, 183230, 185420, 190670, 194490, 198200, 202010, 207320, 211020, 214900, 218590, 221760, 226060, 229840, 236410, 239970, 243410],\n" +
+        "    language: 'Japanese',\n" +
+        "    genre: 'Electronic',\n" +
+        "    mood: 'Chill',\n" +
+        "    listeners: '6.1M',\n" +
+        "    plays: '1.4B',\n" +
+        "  },\n" +
+        "\n" +
+        "\n" +
+        "]\n" +
+        "\n" +
+        "export const DEFAULT_TRACK: Track = MUSIC_TRACKS[0]\nでも治らな治してみせます baby",
       "Yeah, I ain't nothin' but your baby",
       "失って初めて気がつくなんて",
       "そんなダサいこと もうしたないのよ Goodbye",

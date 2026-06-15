@@ -12,6 +12,7 @@ export struct MiniPlayer {
   @StorageLink('likedTrackIds') likedTrackIds: string = ''
   @StorageLink('currentTimeSeconds') private elapsedSeconds: number = 0
   @StorageLink('currentTrackId') private currentTrackId: string = ''
+  @State private playPressed: boolean = false
 
   private async openPlayer(): Promise<void> {
     const state = router.getState()
@@ -96,34 +97,30 @@ export struct MiniPlayer {
   @Builder
   private PlayPauseButton() {
     Stack({ alignContent: Alignment.Center }) {
-      Row()
-        .width(46)
-        .height(46)
-        .borderRadius(23)
-        .linearGradient({
-          angle: 145,
-          colors: [['#FFFFFF', 0.0], ['#E8E8F2', 1.0]]
-        })
-        .border({ width: 1, color: 'rgba(255,255,255,0.65)' })
-        .shadow({
-          radius: this.isPlaying ? 16 : 9,
-          color: this.currentTrack.accent,
-          offsetX: 0,
-          offsetY: 4
-        })
-        .animation({ duration: 400, curve: Curve.EaseInOut })
-        .hitTestBehavior(HitTestMode.None)
       Text(this.isPlaying ? 'Ⅱ' : '▶')
-        .fontSize(18)
+        .fontSize(this.isPlaying ? 22 : 24)
         .fontWeight(FontWeight.Bold)
-        .fontColor(MeowColors.navyDeep)
+        .fontColor(MeowColors.textPrimary)
         .textAlign(TextAlign.Center)
         .translate({ x: this.isPlaying ? 0 : 2 })
+        .shadow(this.playPressed
+          ? { radius: 10, color: this.currentTrack.accent, offsetX: 0, offsetY: 0 }
+          : { radius: 0, color: MeowColors.transparent, offsetX: 0, offsetY: 0 })
         .hitTestBehavior(HitTestMode.None)
     }
-    .width(50)
-    .height(50)
+    .width(48)
+    .height(48)
+    .scale({ x: this.playPressed ? 0.88 : 1, y: this.playPressed ? 0.88 : 1 })
+    .animation({ duration: 130, curve: Curve.EaseOut })
+    .focusable(false)
     .hitTestBehavior(HitTestMode.Block)
+    .onTouch((event: TouchEvent) => {
+      if (event.type === TouchType.Down) {
+        this.playPressed = true
+      } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+        this.playPressed = false
+      }
+    })
     .onClick(() => {
       this.togglePlay()
     })
