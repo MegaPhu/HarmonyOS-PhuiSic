@@ -277,8 +277,8 @@ struct Player {
       offsetY: 10
     })
     .scale({
-      x: this.isPlaying ? 0.85 : 1,
-      y: this.isPlaying ? 0.85 : 1
+      x: this.isPlaying ? 1 : 0.85,
+      y: this.isPlaying ? 1 : 0.85
     })
     .animation({ duration: 450, curve: Curve.Friction })
     .parallelGesture(
