@@ -392,6 +392,7 @@ struct Player {
             if (width > 0) {
               const fraction = Math.max(0, Math.min(1, event.touches[0].x / width))
               this.dragPosition = Math.floor(fraction * this.currentTrack.duration)
+              this.elapsedSeconds = this.dragPosition
             }
           }
           return
@@ -402,6 +403,7 @@ struct Player {
           if (width > 0) {
             const fraction = Math.max(0, Math.min(1, event.touches[0].x / width))
             this.dragPosition = Math.floor(fraction * this.currentTrack.duration)
+            this.elapsedSeconds = this.dragPosition
           }
           return
         }
@@ -1432,8 +1434,6 @@ struct Player {
           this.Controls()
           this.BottomActions()
           LyricsCard({
-            track: this.currentTrack,
-            activeIndex: this.activeLyricIndex(),
             clickAction: () => {
               this.lyricsExpanded = !this.lyricsExpanded
             }

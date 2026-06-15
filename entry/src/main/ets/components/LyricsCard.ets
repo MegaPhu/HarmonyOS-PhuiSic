@@ -9,9 +9,23 @@ interface VisibleLyric {
 @Preview
 @Component
 export struct LyricsCard {
-  @Prop track: Track = DEFAULT_TRACK
-  @Prop activeIndex: number = 0
+  @StorageLink('currentTrack') track: Track = DEFAULT_TRACK
+  @StorageLink('currentTimeSeconds') elapsedSeconds: number = 0
   clickAction: () => void = () => {}
+
+  private activeLyricIndex(): number {
+    if (this.track.lyrics.length === 0 || this.track.timestamps.length === 0) {
+      return 0
+    }
+    let activeIndex = 0
+    const elapsedMs = this.elapsedSeconds * 1000
+    for (let i = 0; i < this.track.timestamps.length; i++) {
+      if (elapsedMs >= this.track.timestamps[i]) {
+        activeIndex = i
+      }
+    }
+    return Math.min(activeIndex, this.track.lyrics.length - 1)
+  }
 
   private visibleLyrics(activeIndex: number): VisibleLyric[] {
     const lines: VisibleLyric[] = []
@@ -67,7 +81,7 @@ export struct LyricsCard {
       }
       .width('100%')
 
-      this.LyricLines(this.activeIndex)
+      this.LyricLines(this.activeLyricIndex())
     }
     .width('100%')
     .padding(20)
