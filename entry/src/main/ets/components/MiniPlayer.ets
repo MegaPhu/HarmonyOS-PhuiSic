@@ -1,172 +1,212 @@
 import router from '@ohos.router'
+import promptAction from '@ohos.promptAction'
 import { DEFAULT_TRACK, Track } from '../model/MusicData'
 import { PlayerManager } from '../model/PlayerManager'
-import { MeowColors, MeowEffects } from '../theme/theme'
+import { MeowColors, MeowEffects, MeowRadius } from '../theme/theme'
 
+@Preview
 @Component
 export struct MiniPlayer {
   @StorageLink('currentTrack') currentTrack: Track = DEFAULT_TRACK
   @StorageLink('isPlaying') isPlaying: boolean = false
   @StorageLink('likedTrackIds') likedTrackIds: string = ''
+  @StorageLink('currentTimeSeconds') private elapsedSeconds: number = 0
+  @StorageLink('currentTrackId') private currentTrackId: string = ''
 
   private async openPlayer(): Promise<void> {
-    console.log('[MiniPlayer] open player')
+    const state = router.getState()
+    if (state.name === 'Player') {
+      return
+    }
     await router.pushUrl({ url: 'pages/main/Player' })
   }
 
   private togglePlay(): void {
-    console.log('[MiniPlayer] toggle play')
     PlayerManager.togglePlay(this.isPlaying)
   }
 
   private toggleLike(): void {
-    console.log(`[MiniPlayer] add to library ${this.currentTrack.title}`)
     PlayerManager.toggleLikedInStorage(this.currentTrack, this.likedTrackIds)
   }
 
-  @Builder
-  private Cover() {
-    Image(this.currentTrack.artwork)
-      .width(72)
-      .height(72)
-      .objectFit(ImageFit.Cover)
-      .clip(true)
-      .backgroundColor(MeowColors.solidSurface)
+  private currentTrackLiked(): boolean {
+    return PlayerManager.isLiked(this.currentTrack, this.likedTrackIds)
+  }
+
+  private progressFraction(): number {
+    if (this.currentTrack.duration <= 0) {
+      return 0
+    }
+    return Math.min(this.elapsedSeconds / this.currentTrack.duration, 1)
+  }
+
+  private playerVisibility(): Visibility {
+    return this.currentTrackId.length > 0 ? Visibility.Visible : Visibility.Hidden
   }
 
   @Builder
-  private ActionIcon(label: string, sizeValue: number, action: () => void = () => {}) {
-    Text(label)
-      .fontSize(sizeValue)
-      .fontWeight(FontWeight.Bold)
-      .fontColor(MeowColors.textPrimary)
-      .opacity(0.94)
-      .width(30)
-      .height(44)
-      .textAlign(TextAlign.Center)
-      .onClick(() => {
-        action()
-      })
-  }
-
-  @Builder
-  private DeviceActionIcon() {
+  private ConnectButton() {
     Stack({ alignContent: Alignment.Center }) {
       Row()
-        .width(16)
-        .height(22)
-        .borderRadius(4)
-        .border({ width: 2, color: MeowColors.textPrimary })
-      Row()
-        .width(5)
-        .height(5)
-        .borderRadius(3)
-        .backgroundColor(MeowColors.textPrimary)
-        .translate({ x: 0, y: 7 })
-      Row()
-        .width(12)
-        .height(16)
-        .borderRadius(3)
-        .border({ width: 2, color: MeowColors.textPrimary })
-        .translate({ x: -11, y: 4 })
+        .width(34)
+        .height(34)
+        .borderRadius(17)
+        .backgroundColor('rgba(255,255,255,0.07)')
+        .border({ width: 1, color: 'rgba(255,255,255,0.12)' })
+        .hitTestBehavior(HitTestMode.None)
+      Text('⊙')
+        .fontSize(18)
+        .fontColor(MeowColors.textSecondary)
+        .textAlign(TextAlign.Center)
+        .hitTestBehavior(HitTestMode.None)
     }
-    .width(30)
+    .width(44)
     .height(44)
-    .opacity(0.94)
+    .hitTestBehavior(HitTestMode.Block)
     .onClick(() => {
-      console.log('[MiniPlayer] connect tapped')
+      promptAction.showToast({ message: 'Connect to device: Coming soon', duration: 2000 })
     })
   }
 
   @Builder
-  private AddLibraryIcon() {
+  private AddLibraryButton() {
     Stack({ alignContent: Alignment.Center }) {
       Circle()
         .width(30)
         .height(30)
-        .fill(PlayerManager.isLiked(this.currentTrack, this.likedTrackIds) ? this.currentTrack.accentSoft : MeowColors.transparent)
-        .stroke(PlayerManager.isLiked(this.currentTrack, this.likedTrackIds) ? this.currentTrack.accent : MeowColors.textPrimary)
-        .strokeWidth(2)
-
-      Row()
-        .width(14)
-        .height(2.2)
-        .borderRadius(1.1)
-        .backgroundColor(PlayerManager.isLiked(this.currentTrack, this.likedTrackIds) ? this.currentTrack.accent : MeowColors.textPrimary)
-
-      Row()
-        .width(2.2)
-        .height(14)
-        .borderRadius(1.1)
-        .backgroundColor(PlayerManager.isLiked(this.currentTrack, this.likedTrackIds) ? this.currentTrack.accent : MeowColors.textPrimary)
+        .fill(this.currentTrackLiked() ? this.currentTrack.accent : 'transparent')
+        .stroke(this.currentTrackLiked() ? this.currentTrack.accent : MeowColors.textSecondary)
+        .strokeWidth(1.8)
+        .hitTestBehavior(HitTestMode.None)
+      Text(this.currentTrackLiked() ? '✓' : '+')
+        .fontSize(this.currentTrackLiked() ? 15 : 20)
+        .fontWeight(this.currentTrackLiked() ? FontWeight.Bold : FontWeight.Regular)
+        .fontColor(this.currentTrackLiked() ? MeowColors.navyDeep : MeowColors.textSecondary)
+        .textAlign(TextAlign.Center)
+        .hitTestBehavior(HitTestMode.None)
     }
-    .width(30)
+    .width(44)
     .height(44)
-    .opacity(0.94)
+    .hitTestBehavior(HitTestMode.Block)
     .onClick(() => {
       this.toggleLike()
     })
   }
 
   @Builder
-  private PlayButton() {
-    this.ActionIcon(this.isPlaying ? 'Ⅱ' : '▶', 28, () => {
+  private PlayPauseButton() {
+    Stack({ alignContent: Alignment.Center }) {
+      Row()
+        .width(42)
+        .height(42)
+        .borderRadius(21)
+        .backgroundColor(MeowColors.textPrimary)
+        .shadow({
+          radius: this.isPlaying ? 16 : 0,
+          color: this.currentTrack.accentSoft,
+          offsetX: 0,
+          offsetY: 0
+        })
+        .animation({ duration: 400, curve: Curve.EaseInOut })
+        .hitTestBehavior(HitTestMode.None)
+      Text(this.isPlaying ? 'Ⅱ' : '▶')
+        .fontSize(18)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(MeowColors.navyDeep)
+        .textAlign(TextAlign.Center)
+        .translate({ x: this.isPlaying ? 0 : 2 })
+        .hitTestBehavior(HitTestMode.None)
+    }
+    .width(50)
+    .height(50)
+    .hitTestBehavior(HitTestMode.Block)
+    .onClick(() => {
       this.togglePlay()
     })
   }
 
   build() {
-    Row({ space: 14 }) {
-      Row() {
-        this.Cover()
-      }
-      .width(72)
-      .height(72)
-      .onClick(() => {
-        this.openPlayer()
-      })
+    Stack({ alignContent: Alignment.BottomStart }) {
+      Row()
+        .width(`${this.progressFraction() * 100}%`)
+        .height(3)
+        .backgroundColor(this.currentTrack.accent)
+        .borderRadius(1.5)
+        .zIndex(5)
+        .hitTestBehavior(HitTestMode.None)
 
-      Column({ space: 5 }) {
-        Text(this.currentTrack.title)
-          .fontSize(15)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(MeowColors.textPrimary)
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-        Text(this.currentTrack.artist)
-          .fontSize(13)
-          .fontColor(MeowColors.textSecondaryStrong)
-          .maxLines(1)
-          .textOverflow({ overflow: TextOverflow.Ellipsis })
-      }
-      .layoutWeight(1)
-      .alignItems(HorizontalAlign.Start)
-      .justifyContent(FlexAlign.Center)
-      .onClick(() => {
-        this.openPlayer()
-      })
+      Row({ space: 10 }) {
+        Image(this.currentTrack.artwork)
+          .width(60)
+          .height(60)
+          .objectFit(ImageFit.Cover)
+          .borderRadius(MeowRadius.control)
+          .clip(true)
+          .backgroundColor(MeowColors.solidSurface)
+          .shadow({
+            radius: 12,
+            color: this.currentTrack.accentSoft,
+            offsetX: 0,
+            offsetY: 4
+          })
+          .margin({ left: 10 })
+          .hitTestBehavior(HitTestMode.Block)
+          .onClick(() => {
+            this.openPlayer()
+          })
 
-      Row({ space: 20 }) {
-        this.DeviceActionIcon()
-        this.AddLibraryIcon()
-        this.PlayButton()
+        Column({ space: 4 }) {
+          Text(this.currentTrack.title)
+            .fontSize(14)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(MeowColors.textPrimary)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+          Text(this.currentTrack.artist)
+            .fontSize(12)
+            .fontColor(MeowColors.textSecondaryStrong)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
+        .layoutWeight(1)
+        .alignItems(HorizontalAlign.Start)
+        .justifyContent(FlexAlign.Center)
+        .hitTestBehavior(HitTestMode.Block)
+        .onClick(() => {
+          this.openPlayer()
+        })
+
+        Row({ space: 0 }) {
+          this.ConnectButton()
+          this.AddLibraryButton()
+          this.PlayPauseButton()
+        }
+        .padding({ right: 8 })
+        .alignItems(VerticalAlign.Center)
       }
-      .padding({ right: 16 })
+      .width('100%')
+      .height(80)
       .alignItems(VerticalAlign.Center)
     }
     .width('100%')
-    .height(72)
-    .padding({ left: 0, right: 0, top: 0, bottom: 0 })
-    .backgroundColor(MeowColors.miniPlayerOverlay)
+    .height(80)
+    .linearGradient({
+      angle: 90,
+      colors: [
+        [this.currentTrack.accentSoft, 0.0],
+        [MeowColors.miniPlayerOverlay, 0.45]
+      ]
+    })
     .border({ width: 1, color: MeowColors.borderSoft })
-    .borderRadius(16)
+    .borderRadius(20)
     .clip(true)
     .backdropBlur(MeowEffects.backdropBlur)
     .shadow({
-      radius: 22,
-      color: MeowColors.shadowMiniPlayer,
+      radius: 28,
+      color: this.currentTrack.accentSoft,
       offsetX: 0,
-      offsetY: 8
+      offsetY: 10
     })
+    .visibility(this.playerVisibility())
   }
 }

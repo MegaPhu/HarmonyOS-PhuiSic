@@ -5,7 +5,7 @@ export struct GlassInput {
   @Link value: string
   @Prop placeholder: string = ''
   @Prop icon: string = ''
-  @Prop iconResource: Resource = $r('app.media.ic_gmail')
+  @Prop iconResource: Resource
   @Prop useIconImage: boolean = false
   @Prop isPassword: boolean = false
   @Prop showPasswordToggle: boolean = false
@@ -68,7 +68,7 @@ export struct GlassInput {
     .height(56)
     .width('100%')
     .padding({ left: 18, right: 16 })
-    .borderRadius(28)
+    .borderRadius(MeowRadius.pill)
     .backgroundColor(MeowColors.glassInputBg)
     .border({
       width: this.focused ? 1.8 : 1.5,

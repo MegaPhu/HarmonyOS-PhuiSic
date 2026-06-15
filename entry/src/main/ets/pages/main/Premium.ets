@@ -1,3 +1,4 @@
+import router from '@ohos.router'
 import { BottomNavBar } from '../../components/BottomNavBar'
 import { GoldGradientText } from '../../components/GoldGradientText'
 import { MiniPlayer } from '../../components/MiniPlayer'
@@ -61,6 +62,23 @@ struct Premium {
 
       Scroll() {
         Column({ space: MeowSpacing.sectionGap }) {
+          Row() {
+            Text('‹')
+              .fontSize(28)
+              .fontWeight(FontWeight.Bold)
+              .fontColor(MeowColors.textPrimary)
+              .width(44)
+              .height(44)
+              .textAlign(TextAlign.Center)
+              .borderRadius(22)
+              .backgroundColor('rgba(255,255,255,0.06)')
+              .onClick(() => {
+                router.back()
+              })
+            Blank()
+          }
+          .width('100%')
+
           Text('Premium')
             .fontSize(MeowTypography.headingSize)
             .fontWeight(FontWeight.Bold)
@@ -98,7 +116,7 @@ struct Premium {
 
               PrimaryButton({
                 label: 'Start Gold',
-                action: () => {
+                clickAction: () => {
                   console.log('[PremiumPage] start gold')
                 }
               })
@@ -106,8 +124,8 @@ struct Premium {
               SecondaryButton({
                 label: 'Maybe Later',
                 ghost: true,
-                action: () => {
-                  console.log('[PremiumPage] maybe later')
+                clickAction: () => {
+                  router.back()
                 }
               })
             }
@@ -143,6 +161,7 @@ struct Premium {
       }
       .width('100%')
       .zIndex(10)
+      .hitTestBehavior(HitTestMode.Block)
     }
     .width('100%')
     .height('100%')

@@ -11,8 +11,14 @@ import { MeowColors, MeowSpacing, MeowTypography } from '../../theme/theme'
 struct ResetPassword {
   @State private email: string = ''
   @State private sent: boolean = false
+  @State private validationError: string = ''
 
   private async sendResetLink(): Promise<void> {
+    if (this.email.trim().length === 0) {
+      this.validationError = 'Please enter your email address.'
+      return
+    }
+    this.validationError = ''
     console.log('[ResetPasswordPage] send reset link')
     this.sent = true
   }
@@ -46,7 +52,7 @@ struct ResetPassword {
       Scroll() {
         Column({ space: 24 }) {
           Row() {
-            Text('<')
+            Text('‹')
               .fontSize(28)
               .fontWeight(FontWeight.Bold)
               .fontColor(MeowColors.textPrimary)
@@ -62,7 +68,7 @@ struct ResetPassword {
             Text('♫')
               .fontSize(30)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#c9a84c')
+              .fontColor(MeowColors.goldBright)
               .opacity(0.86)
           }
           .width('100%')
@@ -116,6 +122,14 @@ struct ResetPassword {
                 })
 
                 AuthMascot({ compact: true, dj: false, variant: 'reset' })
+
+                if (this.validationError.length > 0) {
+                  Text(this.validationError)
+                    .fontSize(12)
+                    .fontColor(MeowColors.errorRed)
+                    .textAlign(TextAlign.Center)
+                    .width('100%')
+                }
               }
 
               if (this.sent) {
@@ -127,22 +141,22 @@ struct ResetPassword {
                   .width('100%')
               }
 
-              PrimaryButton({
-                label: 'Send Reset Link',
-                action: () => {
-                  this.sendResetLink()
-                }
-              })
-
-              Text('Back to Login')
-                .fontSize(13)
-                .fontWeight(FontWeight.Bold)
-                .fontColor(MeowColors.goldBright)
-                .textAlign(TextAlign.Center)
-                .width('100%')
-                .onClick(() => {
-                  this.navigateToLogin()
+              if (this.sent) {
+                PrimaryButton({
+                  label: 'Back to Login',
+                  clickAction: () => {
+                    this.navigateToLogin()
+                  }
                 })
+              } else {
+                PrimaryButton({
+                  label: 'Send Reset Link',
+                  clickAction: () => {
+                    this.sendResetLink()
+                  }
+                })
+              }
+
             }
           }
         }

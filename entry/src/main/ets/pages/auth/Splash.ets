@@ -9,8 +9,7 @@ struct Splash {
 
   aboutToAppear(): void {
     this.routeTimer = setTimeout(() => {
-      console.log('[SplashPage] auto navigate login')
-      router.replaceUrl({ url: 'pages/auth/Login' })
+      this.navigateToLogin()
     }, 2400)
   }
 
@@ -19,6 +18,15 @@ struct Splash {
       clearTimeout(this.routeTimer)
       this.routeTimer = -1
     }
+  }
+
+  private navigateToLogin(): void {
+    if (this.routeTimer !== -1) {
+      clearTimeout(this.routeTimer)
+      this.routeTimer = -1
+    }
+    console.log('[SplashPage] skip to login')
+    router.replaceUrl({ url: 'pages/auth/Login' })
   }
 
   build() {
@@ -80,5 +88,8 @@ struct Splash {
     .height('100%')
     .backgroundColor(MeowColors.navyDeep)
     .expandSafeArea([SafeAreaType.SYSTEM])
+    .onClick(() => {
+      this.navigateToLogin()
+    })
   }
 }

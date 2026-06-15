@@ -12,7 +12,12 @@ export interface Track {
   accentSoft: string
   lyrics: string[]
   timestamps: number[]
-  liked: boolean
+  language: string
+  genre: string
+  mood: string
+  listeners: string
+  plays: string
+  audioSrc: string
 }
 
 export interface MusicCategory {
@@ -23,9 +28,9 @@ export interface MusicCategory {
 
 export const MUSIC_CATEGORIES: MusicCategory[] = [
   { id: '1', label: 'All', active: true },
-  { id: '2', label: 'Music', active: false },
-  { id: '3', label: 'Podcast', active: false },
-  { id: '4', label: 'Audiobooks', active: false }
+  { id: '2', label: 'Thai', active: false },
+  { id: '3', label: 'Japanese', active: false },
+  { id: '4', label: 'International', active: false }
 ]
 
 export const MUSIC_TRACKS: Track[] = [
@@ -33,14 +38,15 @@ export const MUSIC_TRACKS: Track[] = [
     id: '1',
     title: 'NO ERA AMOR',
     artist: 'DJ Asul',
-    album: 'English Songs',
+    album: 'Spanish Songs',
     kind: 'Single',
-    durationLabel: '1:44',
-    duration: 104,
+    durationLabel: '1:45',
+    duration: 105,
     cover: $r('app.media.cover_no_era_amor_song'),
     artwork: $r('app.media.cover_no_era_amor_song'),
-    accent: '#ED080F',
-    accentSoft: '#4D1416',
+    accent: '#E8192C',
+    accentSoft: '#4A0E14',
+    audioSrc: 'audio/no_era_amor.mp3',
     lyrics: [
       'No era amor',
       'No era amor',
@@ -96,7 +102,11 @@ export const MUSIC_TRACKS: Track[] = [
       'No era amor'
     ],
     timestamps: [10, 2220, 4540, 9250, 11310, 13650, 16080, 18530, 20460, 22850, 25290, 27920, 30160, 32980, 34360, 37260, 39100, 41570, 43930, 46400, 48770, 51050, 55620, 58000, 60250, 65020, 67080, 69310, 71660, 74380, 76390, 78570, 81000, 83630, 85910, 88310, 93080, 95000, 97350, 99650, 102350],
-    liked: false
+    language: 'Spanish',
+    genre: 'Phonk',
+    mood: 'Sad',
+    listeners: '10.8M',
+    plays: '1.2B',
   },
 
   {
@@ -105,12 +115,13 @@ export const MUSIC_TRACKS: Track[] = [
     artist: '承桓',
     album: 'Chinese Songs',
     kind: 'Single',
-    durationLabel: '3:15',
-    duration: 162,
+    durationLabel: '3:23',
+    duration: 203,
     cover: $r('app.media.cover_wo_hui_deng_song'),
     artwork: $r('app.media.cover_wo_hui_deng_song'),
-    accent: '#46B4D8',
-    accentSoft: '#1D3A44',
+    accent: '#4EB5E0',
+    accentSoft: '#163A50',
+    audioSrc: 'audio/wo_hui_deng.mp3',
     lyrics: [
       '我想學一個遨游太空的魔法',
       '把所有心願都在夜空種下',
@@ -159,7 +170,11 @@ export const MUSIC_TRACKS: Track[] = [
       '相信美夢和你 總有一天會預先到達'
     ],
     timestamps: [17870, 21550, 24190, 33240, 36870, 39760, 47550, 51430, 55250, 59140, 63000, 66860, 70770, 74610, 95180, 98850, 101710, 110630, 114310, 117170, 124990, 128890, 132700, 136520, 140430, 144380, 148050, 152040, 159800, 163700, 167420, 171480, 175250, 179120, 183010, 186920],
-    liked: false
+    language: 'Chinese',
+    genre: 'Pop',
+    mood: 'Romantic',
+    listeners: '3.2M',
+    plays: '890M',
   },
   {
     id: '3',
@@ -167,12 +182,13 @@ export const MUSIC_TRACKS: Track[] = [
     artist: 'Tiger',
     album: 'Thai Songs',
     kind: 'Single',
-    durationLabel: '3:49',
-    duration: 184,
+    durationLabel: '3:48',
+    duration: 228,
     cover: $r('app.media.cover_toy_car_song'),
     artwork: $r('app.media.cover_toy_car_song'),
-    accent: '#C46A6B',
-    accentSoft: '#3F2427',
+    accent: '#C49A6A',
+    accentSoft: '#3D2A18',
+    audioSrc: 'audio/toy_car.mp3',
     lyrics: [
       'พ่อครับ พ่อจําได้ไหมในวันที่ผมยังเป็นเด็ก กับรถคันเล็กคันโปรดนั้น',
       'สุขใจอยู่บนถนนที่มีในจินตนาการ แค่ไขลานแล้วให้วิ่งไป',
@@ -203,20 +219,25 @@ export const MUSIC_TRACKS: Track[] = [
       'สุดท้ายมันคือที่เธอไม่สนใจ'
     ],
     timestamps: [3330, 14330, 26440, 35070, 41850, 46590, 57580, 70830, 82360, 93000, 102770, 110080, 114410, 125770, 138700, 150250, 157840, 165450, 168070, 179270, 213740],
-    liked: false
+    language: 'Thai',
+    genre: 'Pop',
+    mood: 'Romantic',
+    listeners: '2.1M',
+    plays: '540M',
   },
   {
     id: '4',
     title: 'Kamin',
     artist: 'EMIN feat.JONY',
-    album: 'English Songs',
+    album: 'Russian Songs',
     kind: 'Single',
-    durationLabel: '3:04',
-    duration: 155,
+    durationLabel: '3:05',
+    duration: 185,
     cover: $r('app.media.cover_kamin_song'),
     artwork: $r('app.media.cover_kamin_song'),
-    accent: '#D65ACF',
-    accentSoft: '#442147',
+    accent: '#8B5ED4',
+    accentSoft: '#2D1A4A',
+    audioSrc: 'audio/kamin.mp3',
     lyrics: [
       "V kamine v shest' utra",
       "Fotografiya tvoya",
@@ -270,7 +291,11 @@ export const MUSIC_TRACKS: Track[] = [
       "Pustota"
     ],
     timestamps: [690, 3920, 7700, 12430, 15400, 19480, 23320, 27490, 30860, 34510, 38610, 42940, 45710, 49440, 53070, 57880, 61820, 65100, 68120, 72500, 76110, 78540, 79590, 81410, 82890, 85080, 88940, 92640, 94810, 96480, 98590, 100490, 101510, 103060, 107120, 110580, 114720, 118640, 122340, 125540, 130050, 134300, 137200, 140750, 144740, 149210, 152830, 156170, 160260, 164350],
-    liked: false
+    language: 'Russian',
+    genre: 'Electronic',
+    mood: 'Romantic',
+    listeners: '5.7M',
+    plays: '1.1B',
   },
   {
     id: '5',
@@ -278,12 +303,13 @@ export const MUSIC_TRACKS: Track[] = [
     artist: 'WanYai',
     album: 'Thai Songs',
     kind: 'Single',
-    durationLabel: '5:36',
-    duration: 146,
+    durationLabel: '5:35',
+    duration: 335,
     cover: $r('app.media.cover_jep_jon_por_song'),
     artwork: $r('app.media.cover_jep_jon_por_song'),
-    accent: '#2AB7A9',
-    accentSoft: '#173E3C',
+    accent: '#7ABAAE',
+    accentSoft: '#243A35',
+    audioSrc: 'audio/jep_jon_por.mp3',
     lyrics: [
       'ไม่ต่างอะไรจากวันนั้น',
       'สิ่งที่เธอทำกับฉัน',
@@ -339,7 +365,11 @@ export const MUSIC_TRACKS: Track[] = [
       'กับเธอ เจ็บจนพอแล้ว พอสักที'
     ],
     timestamps: [11330, 14040, 16730, 22690, 28290, 33690, 39260, 44660, 50730, 57940, 63440, 68220, 74770, 79580, 84800, 90440, 96700, 109170, 111060, 113670, 119270, 122230, 124700, 129630, 135700, 140720, 146630, 151140, 156740, 162210, 168460, 173280, 179060, 184690, 191270, 215750, 220380, 226040, 232120, 236720, 242380, 247870, 254940],
-    liked: false
+    language: 'Thai',
+    genre: 'Pop',
+    mood: 'Sad',
+    listeners: '1.8M',
+    plays: '420M',
   },
   {
     id: '6',
@@ -347,12 +377,13 @@ export const MUSIC_TRACKS: Track[] = [
     artist: 'Yung Kai',
     album: 'English Songs',
     kind: 'Single',
-    durationLabel: '3:34',
-    duration: 178,
-    cover: $r('app.media.cover_whale_song'),
-    artwork: $r('app.media.cover_whale_song'),
-    accent: '#2FA7D6',
-    accentSoft: '#1F3742',
+    durationLabel: '3:35',
+    duration: 215,
+    cover: $r('app.media.cover_blue_song'),
+    artwork: $r('app.media.cover_blue_song'),
+    accent: '#5AB8DC',
+    accentSoft: '#183040',
+    audioSrc: 'audio/blue.mp3',
     lyrics: [
       "Your morning eyes, I could stare like watching stars",
       "I could walk you by, and I'll tell without a thought",
@@ -379,7 +410,11 @@ export const MUSIC_TRACKS: Track[] = [
       "Will you be forever with me"
     ],
     timestamps: [18740, 25940, 32500, 34590, 39960, 47750, 50320, 54240, 57870, 61760, 65860, 69110, 76950, 106460, 112100, 121000, 127770, 136290, 138870, 142720, 146330, 149970, 154360, 157740],
-    liked: false
+    language: 'English',
+    genre: 'Pop',
+    mood: 'Chill',
+    listeners: '28.4M',
+    plays: '3.2B',
   },
   {
     id: '7',
@@ -387,12 +422,13 @@ export const MUSIC_TRACKS: Track[] = [
     artist: 'Escape Plan',
     album: 'Chinese Songs',
     kind: 'Single',
-    durationLabel: '4:35',
-    duration: 128,
+    durationLabel: '4:34',
+    duration: 274,
     cover: $r('app.media.cover_yue_liang_song'),
     artwork: $r('app.media.cover_yue_liang_song'),
-    accent: '#4B9FC8',
-    accentSoft: '#1F3542',
+    accent: '#6E98C0',
+    accentSoft: '#1A2535',
+    audioSrc: 'audio/yue_liang.mp3',
     lyrics: [
       '夜空中最亮的星能否聽清',
       '那仰望的人心底的孤獨和歎息?',
@@ -438,7 +474,11 @@ export const MUSIC_TRACKS: Track[] = [
       '那仰望的人心底的孤獨和歎息?'
     ],
     timestamps: [4520, 13220, 22430, 30890, 38780, 44070, 49450, 52600, 56630, 61440, 65960, 70690, 75580, 84000, 93590, 101560, 109840, 114990, 120690, 123530, 127900, 132560, 136790, 141770, 167890, 174440, 181400, 185310, 190390, 195410, 200720, 205200, 215330, 225350],
-    liked: false
+    language: 'Chinese',
+    genre: 'Pop',
+    mood: 'Sad',
+    listeners: '3.4M',
+    plays: '760M',
   },
   {
     id: '8',
@@ -446,12 +486,13 @@ export const MUSIC_TRACKS: Track[] = [
     artist: 'GUNGUN',
     album: 'Thai Songs',
     kind: 'Single',
-    durationLabel: '3:46',
-    duration: 128,
+    durationLabel: '3:35',
+    duration: 215,
     cover: $r('app.media.cover_whale_song'),
     artwork: $r('app.media.cover_whale_song'),
-    accent: '#2FA7D6',
-    accentSoft: '#1F3742',
+    accent: '#00C8DC',
+    accentSoft: '#0A3840',
+    audioSrc: 'audio/whale.mp3',
     lyrics: [
       'มีวาฬตัวหนึ่งลอยว่ายน้ำมา',
       'ดูเจ็บช้ำทรวงอุรากว่าที่เคย',
@@ -510,7 +551,11 @@ export const MUSIC_TRACKS: Track[] = [
       'และสุดท้ายต้องมาตายเพราะรักเธอ'
     ],
     timestamps: [22080, 25810, 31430, 35420, 39750, 42520, 45450, 48980, 51860, 54950, 58730, 61060, 63300, 68090, 71900, 73800, 89270, 92880, 98590, 102490, 106980, 109220, 111520, 116100, 120050, 126320, 130610, 133290, 135550, 140090, 144030, 145620, 150060, 152410, 154700, 159210, 163180, 164820, 188190, 190900, 193000, 197700, 201590, 203350, 207500, 211110, 212860],
-    liked: false
+    language: 'Thai',
+    genre: 'Pop',
+    mood: 'Sad',
+    listeners: '5.1M',
+    plays: '980M',
   },
   {
     id: '9',
@@ -518,12 +563,13 @@ export const MUSIC_TRACKS: Track[] = [
     artist: 'Lady Gaga, Bruno Mars',
     album: 'English Songs',
     kind: 'Single',
-    durationLabel: '4:10',
-    duration: 128,
+    durationLabel: '4:09',
+    duration: 249,
     cover: $r('app.media.cover_die_with_a_smile_song'),
     artwork: $r('app.media.cover_die_with_a_smile_song'),
-    accent: '#2B9AC6',
-    accentSoft: '#173C4A',
+    accent: '#1E8EC8',
+    accentSoft: '#0C2A48',
+    audioSrc: 'audio/die_with_a_smile.mp3',
     lyrics: [
       "Ooh, ooh",
       "I, I just woke up from a dream",
@@ -567,20 +613,25 @@ export const MUSIC_TRACKS: Track[] = [
       "I'd wanna be next to you"
     ],
     timestamps: [10590, 12840, 17570, 22070, 26660, 31440, 35850, 40650, 44510, 47160, 56180, 66120, 71080, 75150, 90610, 96440, 101010, 104980, 110390, 115100, 119590, 123520, 126130, 135190, 144560, 149540, 153910, 162900, 167530, 172380, 195650, 205130, 214320, 219330, 223400, 232870, 245460],
-    liked: false
+    language: 'English',
+    genre: 'Pop',
+    mood: 'Romantic',
+    listeners: '118.5M',
+    plays: '8.4B',
   },
   {
     id: '10',
     title: 'Shinunoga E-Wa',
     artist: 'Fujii Kaze',
-    album: 'Japan Songs',
+    album: 'Japanese Songs',
     kind: 'Single',
     durationLabel: '3:11',
-    duration: 128,
+    duration: 191,
     cover: $r('app.media.cover_shinunoga_e_wa_song'),
     artwork: $r('app.media.cover_shinunoga_e_wa_song'),
-    accent: '#A3ADB8',
-    accentSoft: '#30343A',
+    accent: '#A0A8B8',
+    accentSoft: '#25282E',
+    audioSrc: 'audio/shinunoga_e_wa.mp3',
     lyrics: [
       "指切りげんまん ホラでも吹いたら",
       "針でもなんでも 飲ませていただき Monday",
@@ -624,20 +675,25 @@ export const MUSIC_TRACKS: Track[] = [
       "I'll always stick with you, my baby"
     ],
     timestamps: [24980, 29140, 32890, 37130, 40490, 45010, 49260, 52550, 55560, 58420, 61450, 64940, 67830, 70450, 73300, 77100, 81310, 85720, 89330, 93390, 96980, 98570, 101150, 104000, 107030, 110040, 113360, 116390, 119480, 146400, 149690, 152760, 155450, 158390, 161990, 164930, 167700, 171060, 174090, 178670],
-    liked: false
+    language: 'Japanese',
+    genre: 'Pop',
+    mood: 'Romantic',
+    listeners: '8.7M',
+    plays: '1.9B',
   },
   {
     id: '11',
     title: 'NIGHT DANCER',
     artist: 'imase',
-    album: 'Japan Songs',
+    album: 'Japanese Songs',
     kind: 'Single',
-    durationLabel: '3:31',
-    duration: 128,
+    durationLabel: '3:30',
+    duration: 210,
     cover: $r('app.media.cover_night_dancer_song'),
     artwork: $r('app.media.cover_night_dancer_song'),
-    accent: '#F5D84A',
-    accentSoft: '#4A4218',
+    accent: '#D4F020',
+    accentSoft: '#2C3000',
+    audioSrc: 'audio/night_dancer.mp3',
     lyrics: ["どうでもいいような 夜だけど",
       "響めき 煌めきと君も",
       "まだ止まった 刻む針も",
@@ -680,10 +736,94 @@ export const MUSIC_TRACKS: Track[] = [
       "どうでもいいから 僕だけを",
       "ふらつき よろめきながらも （踊ろう）",
       "どうでもいいような 夜だけど ああ",
-      "二人刻もう",],
+      "二人刻もう"
+    ],
     timestamps: [900, 4820, 25520, 29020, 33100, 37290, 41360, 45460, 49440, 53610, 57570, 61710, 65920, 70840, 74640, 78720, 83050, 87480, 106730, 110960, 115050, 119190, 124020, 126160, 128570, 132250, 136860, 140500, 144480, 148530, 152800, 156780, 160850, 164720, 169000, 175250, 179110, 183470, 190410, 191760, 195580, 199890, 204370],
-    liked: false
+    language: 'Japanese',
+    genre: 'Electronic',
+    mood: 'Chill',
+    listeners: '2.8M',
+    plays: '380M',
   },
+  {
+    id: '12',
+    title: '夜に駆ける',
+    artist: 'YOASOBI',
+    album: 'Japanese Songs',
+    kind: 'Single',
+    durationLabel: '4:22',
+    duration: 262,
+    cover: $r('app.media.cover_yoasobi_song'),
+    artwork: $r('app.media.cover_yoasobi_song'),
+    accent: '#E8507A',
+    accentSoft: '#4A1028',
+    audioSrc: 'audio/yoasobi.mp3',
+    lyrics: [
+      "沈むように溶けてゆくように",
+      "二人だけの空が広がる夜に",
+      "「さよなら」だけだった",
+      "その一言で全てが分かった",
+      "日が沈み出した空と君の姿",
+      "フェンス越しに重なっていた",
+      "初めて会った日から",
+      "僕の心の全てを奪った",
+      "どこか儚い空気を纏う君は",
+      "寂しい目をしてたんだ",
+      "いつだってチックタックと",
+      "鳴る世界で何度だってさ",
+      "触れる心無い言葉うるさい声に",
+      "涙が零れそうでも",
+      "ありきたりな喜びきっと二人なら見つけられる",
+      "騒がしい日々に笑えない君に",
+      "思い付く限り眩しい明日を",
+      "明けない夜に落ちてゆく前に",
+      "僕の手を掴んでほら",
+      "忘れてしまいたくて閉じ込めた日々も",
+      "抱きしめた温もりで溶かすから",
+      "怖くないよいつか日が昇るまで",
+      "二人でいよう",
+      "君にしか見えない",
+      "何かを見つめる君が嫌いだ",
+      "見惚れているかのような恋するような",
+      "そんな顔が嫌いだ",
+      "信じていたいけど信じれないこと",
+      "そんなのどうしたってきっと",
+      "これからだって いくつもあって",
+      "そのたんび怒って 泣いていくの",
+      "それでもきっといつかはきっと 僕らはきっと",
+      "分かり合えるさ 信じてるよ",
+      "もう嫌だって疲れたんだって",
+      "がむしゃらに差し伸べた 僕の手を振り払う君",
+      "もう嫌だって 疲れたよなんて",
+      "本当は僕も言いたいんだ",
+      "Ah ほらまたチックタックと",
+      "鳴る世界で何度だってさ",
+      "君の為に用意した言葉 どれも届かない",
+      "「終わりにしたい」だなんてさ",
+      "釣られて言葉にした時",
+      "君は初めて笑った",
+      "騒がしい日々に笑えなくなっていた",
+      "僕の目に映る君は綺麗だ",
+      "明けない夜に零れた涙も",
+      "君の笑顔に溶けていく",
+      "変わらない日々に泣いていた僕を",
+      "君は優しく終わりへと誘う",
+      "沈むように溶けてゆくように",
+      "染み付いた霧が晴れる",
+      "忘れてしまいたくて閉じ込めた日々に",
+      "差し伸べてくれた君の手を取る",
+      "涼しい風が空を泳ぐように今 吹き抜けていく",
+      "繋いだ手を離さないでよ",
+      "二人いま 夜に駆け出していく"
+    ],
+    timestamps: [900, 7730, 30400, 33230, 36930, 41340, 45240, 48210, 51760, 56080, 59760, 61490, 63370, 66260, 68080, 74140, 78230, 82020, 85580, 88570, 92940, 96960, 101150, 117740, 120200, 123660, 128220, 131870, 133330, 135680, 137210, 139340, 142020, 159710, 162170, 167360, 169850, 174110, 175970, 177820, 181090, 183230, 185420, 190670, 194490, 198200, 202010, 207320, 211020, 214900, 218590, 221760, 226060, 229840, 236410, 239970, 243410],
+    language: 'Japanese',
+    genre: 'Electronic',
+    mood: 'Chill',
+    listeners: '6.1M',
+    plays: '1.4B',
+  },
+
 
 ]
 

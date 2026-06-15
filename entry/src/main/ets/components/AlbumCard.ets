@@ -10,7 +10,10 @@ export struct AlbumCard {
   private async openPlayer(): Promise<void> {
     console.log(`[AlbumCard] open ${this.track.title}`)
     PlayerManager.playTrack(this.track)
-    await router.pushUrl({ url: 'pages/main/Player' })
+    const state = router.getState()
+    if (state.name !== 'Player') {
+      await router.pushUrl({ url: 'pages/main/Player' })
+    }
   }
 
   @Builder
@@ -29,7 +32,7 @@ export struct AlbumCard {
     Column({ space: 9 }) {
       this.Cover()
       Column({ space: 4 }) {
-        Text(this.track.kind)
+        Text(this.track.genre)
           .fontSize(11)
           .fontWeight(FontWeight.Medium)
           .fontColor(MeowColors.textTertiary)

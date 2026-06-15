@@ -1,33 +1,47 @@
 import { DEFAULT_TRACK, MUSIC_TRACKS, Track } from './MusicData'
+import { AudioEngine } from './AudioEngine'
 
 export class PlayerManager {
-  private static setCurrentTrack(track: Track, isPlaying: boolean): void {
-    const currentTrackId = AppStorage.Get<string>('currentTrackId')
+  static setCurrentTrack(track: Track, isPlaying: boolean): void {
+    const currentTrackId = AppStorage.get<string>('currentTrackId')
     if (currentTrackId !== track.id) {
-      AppStorage.SetOrCreate<number>('currentTimeSeconds', 0)
+      AppStorage.setOrCreate<number>('currentTimeSeconds', 0)
     }
-    AppStorage.SetOrCreate<Track>('currentTrack', track)
-    AppStorage.SetOrCreate<string>('currentTrackId', track.id)
-    AppStorage.SetOrCreate<boolean>('isPlaying', isPlaying)
+    AppStorage.setOrCreate<Track>('currentTrack', track)
+    AppStorage.setOrCreate<string>('currentTrackId', track.id)
+    AppStorage.setOrCreate<boolean>('isPlaying', isPlaying)
+    if (isPlaying && AudioEngine.isReady()) {
+      AudioEngine.loadAndPlay(track)
+    } else if (!isPlaying) {
+      AudioEngine.pause()
+    }
   }
 
   static playTrack(track: Track): void {
-    PlayerManager.setCurrentTrack(track, false)
+    PlayerManager.setCurrentTrack(track, true)
   }
 
   static togglePlay(isPlaying: boolean): void {
-    AppStorage.SetOrCreate<boolean>('isPlaying', !isPlaying)
+    const newState = !isPlaying
+    AppStorage.setOrCreate<boolean>('isPlaying', newState)
+    if (newState && AudioEngine.isReady()) {
+      AudioEngine.resume()
+    } else if (!newState) {
+      AudioEngine.pause()
+    }
   }
 
   static pause(): void {
-    AppStorage.SetOrCreate<boolean>('isPlaying', false)
+    AppStorage.setOrCreate<boolean>('isPlaying', false)
+    AudioEngine.pause()
   }
 
   static reset(): void {
-    AppStorage.SetOrCreate<number>('currentTimeSeconds', 0)
-    AppStorage.SetOrCreate<Track>('currentTrack', DEFAULT_TRACK)
-    AppStorage.SetOrCreate<string>('currentTrackId', DEFAULT_TRACK.id)
-    AppStorage.SetOrCreate<boolean>('isPlaying', false)
+    AudioEngine.pause()
+    AppStorage.setOrCreate<number>('currentTimeSeconds', 0)
+    AppStorage.setOrCreate<Track>('currentTrack', DEFAULT_TRACK)
+    AppStorage.setOrCreate<string>('currentTrackId', '')
+    AppStorage.setOrCreate<boolean>('isPlaying', false)
   }
 
   static nextTrack(currentTrack: Track): Track {
@@ -35,6 +49,15 @@ export class PlayerManager {
     const safeIndex = currentIndex < 0 ? 0 : currentIndex
     const nextIndex = (safeIndex + 1) % MUSIC_TRACKS.length
     return MUSIC_TRACKS[nextIndex]
+  }
+
+  static shuffledNextTrack(currentTrack: Track): Track {
+    const others = MUSIC_TRACKS.filter((item: Track): boolean => item.id !== currentTrack.id)
+    if (others.length === 0) {
+      return currentTrack
+    }
+    const idx = Math.floor(Math.random() * others.length)
+    return others[idx]
   }
 
   static previousTrack(currentTrack: Track): Track {
@@ -66,7 +89,25 @@ export class PlayerManager {
   }
 
   static toggleLikedInStorage(track: Track, ids: string): void {
-    AppStorage.SetOrCreate<string>('likedTrackIds', PlayerManager.toggleLiked(track, ids))
+    AppStorage.setOrCreate<string>('likedTrackIds', PlayerManager.toggleLiked(track, ids))
+  }
+
+  static isFollowed(artist: string, ids: string): boolean {
+    const token = '|' + artist + '|'
+    return ids.indexOf(token) > -1
+  }
+
+  static toggleFollowed(artist: string, ids: string): string {
+    const token = '|' + artist + '|'
+    if (ids.indexOf(token) > -1) {
+      return ids.replace(token, '')
+    }
+    return ids + token
+  }
+
+  static toggleFollowedInStorage(artist: string, ids: string): void {
+    AppStorage.setOrCreate<string>('followedArtistIds',
+      PlayerManager.toggleFollowed(artist, ids))
   }
 
 }

@@ -1,8 +1,8 @@
-import { MeowColors, MeowTypography } from '../theme/theme'
+import { MeowColors, MeowTheme, MeowTypography } from '../theme/theme'
 
 @Component
 export struct GoldGradientText {
-  @Prop text: string = MeowThemeText.defaultBrand
+  @Prop text: string = MeowTheme.appName
   @Prop textSize: number = MeowTypography.brandSize
   @Prop weight: FontWeight = MeowTypography.brandWeight
   @Prop maxLines: number = 1
@@ -23,8 +23,4 @@ export struct GoldGradientText {
         offsetY: this.glow ? 0 : 1
       })
   }
-}
-
-class MeowThemeText {
-  static readonly defaultBrand: string = 'PhuiSic'
 }

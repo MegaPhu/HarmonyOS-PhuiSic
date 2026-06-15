@@ -1,18 +1,16 @@
+import { DEFAULT_TRACK, Track } from '../model/MusicData'
 import { MainNavigation } from '../model/MainNavigation'
-import { MeowColors, MeowEffects, MeowSpacing } from '../theme/theme'
+import { MeowColors, MeowEffects } from '../theme/theme'
 
+@Preview
 @Component
 export struct BottomNavBar {
   @Prop activeTab: string = 'Home'
-  @Prop trailingTab: string = 'Profile'
+  @StorageLink('currentTrack') private currentTrack: Track = DEFAULT_TRACK
   @State private pressedTab: string = ''
 
   private async navigate(tab: string): Promise<void> {
     if (tab === this.activeTab) {
-      return
-    }
-    if (tab === 'Create') {
-      console.log('[BottomNavBar] create tapped')
       return
     }
     console.log(`[BottomNavBar] navigate ${tab}`)
@@ -29,41 +27,28 @@ export struct BottomNavBar {
     if (label === 'Library') {
       return '▥'
     }
-    if (label === 'Premium') {
-      return '♬'
-    }
-    if (label === 'Create') {
-      return '+'
-    }
     return '◉'
-  }
-
-  @Builder
-  private NavIcon(label: string) {
-    Text(this.iconFor(label))
-      .fontSize(label === 'Create' ? 30 : 24)
-      .fontWeight(FontWeight.Bold)
-      .fontColor(this.activeTab === label ? MeowColors.textPrimary : MeowColors.textDisabled)
   }
 
   @Builder
   private NavItem(label: string) {
     Column({ space: 5 }) {
-      Stack({ alignContent: Alignment.Center }) {
-        this.NavIcon(label)
-      }
-      .width(56)
-      .height(30)
-
+      Text(this.iconFor(label))
+        .fontSize(this.activeTab === label ? 26 : 22)
+        .fontWeight(this.activeTab === label ? FontWeight.Bold : FontWeight.Regular)
+        .fontColor(this.activeTab === label ? MeowColors.textPrimary : MeowColors.textDisabled)
+        .opacity(this.activeTab === label ? 1.0 : 0.55)
+        .animation({ duration: 180, curve: Curve.EaseOut })
       Text(label)
         .fontSize(11)
         .fontWeight(this.activeTab === label ? FontWeight.Bold : FontWeight.Regular)
         .fontColor(this.activeTab === label ? MeowColors.textPrimary : MeowColors.textDisabled)
+        .opacity(this.activeTab === label ? 1.0 : 0.55)
         .maxLines(1)
-        .textOverflow({ overflow: TextOverflow.Ellipsis })
+        .animation({ duration: 180, curve: Curve.EaseOut })
     }
-    .height(68)
     .layoutWeight(1)
+    .height(58)
     .alignItems(HorizontalAlign.Center)
     .justifyContent(FlexAlign.Center)
     .scale({
@@ -80,7 +65,6 @@ export struct BottomNavBar {
     .onClick(() => {
       this.navigate(label)
     })
-    .animation({ duration: 120, curve: Curve.EaseOut })
   }
 
   build() {
@@ -88,14 +72,12 @@ export struct BottomNavBar {
       this.NavItem('Home')
       this.NavItem('Search')
       this.NavItem('Library')
-      this.NavItem('Premium')
-      this.NavItem(this.trailingTab)
+      this.NavItem('Profile')
     }
     .width('100%')
-    .height(MeowSpacing.bottomNavHeight)
-    .padding({ left: 10, right: 10, top: 6, bottom: 6 })
-    .backgroundColor(MeowColors.navOverlay)
-    .border({ width: { top: 1 }, color: MeowColors.borderStrong })
-    .backdropBlur(MeowEffects.backdropBlur)
+    .height(58)
+    .backgroundColor(MeowColors.navyDeep)
+    .border({ width: 0.5, color: MeowColors.borderSoft, style: BorderStyle.Solid })
+    .padding({ bottom: 8 })
   }
 }

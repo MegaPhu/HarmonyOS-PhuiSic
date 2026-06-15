@@ -1,18 +1,23 @@
 import router from '@ohos.router'
 import { BottomNavBar } from '../../components/BottomNavBar'
 import { MiniPlayer } from '../../components/MiniPlayer'
-import { MUSIC_CATEGORIES, MUSIC_TRACKS, MusicCategory, Track } from '../../model/MusicData'
+import { DEFAULT_TRACK, MUSIC_CATEGORIES, MUSIC_TRACKS, MusicCategory, Track } from '../../model/MusicData'
 import { PlayerManager } from '../../model/PlayerManager'
-import { MeowColors, MeowRadius, MeowSpacing } from '../../theme/theme'
+import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme/theme'
 
 @Entry
 @Component
 struct Home {
   @State private activeCategory: string = 'All'
+  @StorageLink('currentTrack') private currentTrack: Track = DEFAULT_TRACK
 
   private async openTrack(track: Track): Promise<void> {
     console.log(`[HomePage] open ${track.title}`)
     PlayerManager.playTrack(track)
+    const state = router.getState()
+    if (state.name === 'Player') {
+      return
+    }
     await router.pushUrl({ url: 'pages/main/Player' })
   }
 
@@ -28,11 +33,14 @@ struct Home {
   }
 
   private visibleTracks(): Track[] {
-    if (this.activeCategory === 'Podcast') {
-      return MUSIC_TRACKS.slice(4, 8)
+    if (this.activeCategory === 'Thai') {
+      return MUSIC_TRACKS.filter((t: Track) => t.language === 'Thai')
     }
-    if (this.activeCategory === 'Audiobooks') {
-      return MUSIC_TRACKS.slice(7, MUSIC_TRACKS.length)
+    if (this.activeCategory === 'Japanese') {
+      return MUSIC_TRACKS.filter((t: Track) => t.language === 'Japanese')
+    }
+    if (this.activeCategory === 'International') {
+      return MUSIC_TRACKS.filter((t: Track) => t.language !== 'Thai' && t.language !== 'Japanese')
     }
     return MUSIC_TRACKS
   }
@@ -45,11 +53,11 @@ struct Home {
   }
 
   private secondaryRailTitle(): string {
-    const tracks = this.visibleTracks()
-    if (tracks.length === 0) {
-      return 'More to Explore'
+    if (this.currentTrack.id !== DEFAULT_TRACK.id) {
+      return `More Like ${this.currentTrack.artist}`
     }
-    return `More Like ${tracks[0].artist}`
+    const tracks = this.visibleTracks()
+    return tracks.length > 0 ? `More Like ${tracks[0].artist}` : 'More to Explore'
   }
 
   private contentBottomPadding(): number {
@@ -116,7 +124,7 @@ struct Home {
     }
     .height(40)
     .padding({ left: 20, right: 20 })
-    .borderRadius(20)
+    .borderRadius(MeowRadius.chipPill)
     .linearGradient({
       angle: 135,
       colors: this.activeCategory === category.label ? [
@@ -125,11 +133,11 @@ struct Home {
         [MeowColors.goldSoft, 0.72],
         [MeowColors.goldDeep, 1.0]
       ] : [
-        ['rgba(255,255,255,0.06)', 0.0],
-        ['rgba(255,255,255,0.06)', 1.0]
+        [MeowColors.glassBg, 0.0],
+        [MeowColors.glassBg, 1.0]
       ]
     })
-    .border({ width: 1, color: this.activeCategory === category.label ? 'rgba(255,215,0,0.40)' : 'rgba(255,255,255,0.12)' })
+    .border({ width: 1, color: this.activeCategory === category.label ? MeowColors.glassStroke : 'rgba(255,255,255,0.12)' })
     .alignItems(VerticalAlign.Center)
     .onClick(() => {
       console.log(`[HomePage] category ${category.label}`)
@@ -156,7 +164,7 @@ struct Home {
   private SectionHeader(title: string, showAction: boolean = false) {
     Row() {
       Text(title)
-        .fontSize(22)
+        .fontSize(MeowTypography.titleSize)
         .fontWeight(FontWeight.Bold)
         .fontColor(MeowColors.textPrimary)
         .layoutWeight(1)
@@ -165,6 +173,9 @@ struct Home {
           .fontSize(12)
           .fontWeight(FontWeight.Bold)
           .fontColor(MeowColors.goldBright)
+          .onClick(() => {
+            router.pushUrl({ url: 'pages/main/Library' })
+          })
       }
     }
     .width('100%')
@@ -197,7 +208,7 @@ struct Home {
         .width('100%')
       Text(track.artist)
         .fontSize(11)
-        .fontColor(MeowColors.textSecondary)
+        .fontColor(MeowColors.textTertiary)
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .width('100%')
@@ -210,14 +221,14 @@ struct Home {
   }
 
   @Builder
-  private RecentGrid(songs: Track[]) {
+  private RecentGrid() {
     Column({ space: 12 }) {
       this.SectionHeader('Recently Played', true)
       Scroll() {
         Row({ space: 14 }) {
-          ForEach(songs, (song: Track) => {
+          ForEach(this.visibleTracks().slice(0, 6), (song: Track) => {
             this.RecentSquareCard(song)
-          }, (song: Track) => song.id)
+          }, (song: Track) => 'recent-' + song.id)
         }
         .padding({ right: 40 })
       }
@@ -255,7 +266,6 @@ struct Home {
         })
 
       Column({ space: 6 }) {
-        this.KindBadge(track.kind)
         Text(track.title)
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
@@ -280,14 +290,14 @@ struct Home {
   }
 
   @Builder
-  private HorizontalPicks(title: string, songs: Track[]) {
+  private HorizontalPicks(title: string, startIndex: number) {
     Column({ space: 12 }) {
       this.SectionHeader(title)
       Scroll() {
         Row({ space: 18 }) {
-          ForEach(songs, (song: Track) => {
+          ForEach(this.visibleTracks().slice(startIndex, startIndex + 6), (song: Track) => {
             this.PickCard(song)
-          }, (song: Track) => song.id)
+          }, (song: Track) => 'pick' + startIndex.toString() + '-' + song.id)
         }
         .padding({ right: 40 })
       }
@@ -296,6 +306,31 @@ struct Home {
       .width('100%')
     }
     .width('100%')
+  }
+
+  @Builder
+  private HomeContent() {
+    Column({ space: 28 }) {
+      this.Header()
+      this.CategoryTabs()
+      if (this.visibleTracks().length === 0) {
+        Column({ space: 8 }) {
+          Text('No tracks in this category')
+            .fontSize(MeowTypography.bodySize)
+            .fontColor(MeowColors.textTertiary)
+            .textAlign(TextAlign.Center)
+        }
+        .width('100%')
+        .padding({ top: 60 })
+        .alignItems(HorizontalAlign.Center)
+      } else {
+        this.RecentGrid()
+        this.HorizontalPicks(this.railTitle(), 0)
+        this.HorizontalPicks(this.secondaryRailTitle(), 1)
+      }
+    }
+    .width('100%')
+    .padding({ left: 16, right: 16, top: 56, bottom: this.contentBottomPadding() })
   }
 
   build() {
@@ -313,15 +348,7 @@ struct Home {
         })
 
       Scroll() {
-        Column({ space: 28 }) {
-          this.Header()
-          this.CategoryTabs()
-          this.RecentGrid(this.visibleTracks().slice(0, 6))
-          this.HorizontalPicks(this.railTitle(), this.visibleTracks().slice(0, 6))
-          this.HorizontalPicks(this.secondaryRailTitle(), this.visibleTracks().slice(1, 7))
-        }
-        .width('100%')
-        .padding({ left: 16, right: 16, top: 56, bottom: this.contentBottomPadding() })
+        this.HomeContent()
       }
       .width('100%')
       .height('100%')
@@ -336,6 +363,7 @@ struct Home {
       }
       .width('100%')
       .zIndex(10)
+      .onClick(() => {})
     }
     .width('100%')
     .height('100%')

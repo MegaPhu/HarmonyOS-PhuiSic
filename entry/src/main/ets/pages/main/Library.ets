@@ -1,8 +1,7 @@
 import router from '@ohos.router'
 import { BottomNavBar } from '../../components/BottomNavBar'
 import { MiniPlayer } from '../../components/MiniPlayer'
-import { SongCard } from '../../components/SongCard'
-import { MUSIC_TRACKS, Track } from '../../model/MusicData'
+import { DEFAULT_TRACK, MUSIC_TRACKS, Track } from '../../model/MusicData'
 import { PlayerManager } from '../../model/PlayerManager'
 import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme/theme'
 
@@ -11,36 +10,97 @@ import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme
 struct Library {
   @State private activeTab: string = 'Playlist'
   @StorageLink('likedTrackIds') likedTrackIds: string = ''
+  @StorageLink('mockUsername') private username: string = 'Phu'
+  @StorageLink('followedArtistIds') private followedArtistIds: string = ''
+
+  aboutToAppear(): void {
+    const p = router.getParams()
+    if (p !== null && p !== undefined) {
+      const params = p as Record<string, string>
+      const tab = params['tab']
+      if (tab === 'Playlist' || tab === 'Album' || tab === 'Artist') {
+        this.activeTab = tab
+      }
+    }
+  }
 
   private handleSearch(): void {
     console.log('[LibraryPage] search tapped')
+    router.replaceUrl({ url: 'pages/main/Search' })
   }
 
   private handleAdd(): void {
-    console.log('[LibraryPage] add tapped')
+    console.log('[LibraryPage] add — coming soon')
   }
 
   private async openTrack(track: Track): Promise<void> {
     console.log(`[LibraryPage] open ${track.title}`)
     PlayerManager.playTrack(track)
-    await router.pushUrl({ url: 'pages/main/Player' })
+    const state = router.getState()
+    if (state.name !== 'Player') {
+      await router.pushUrl({ url: 'pages/main/Player' })
+    }
   }
 
   private likedTracks(): Track[] {
     return MUSIC_TRACKS.filter((track: Track): boolean => PlayerManager.isLiked(track, this.likedTrackIds))
   }
 
-  private likedPreviewTracks(): Track[] {
-    return this.likedTracks().slice(0, 4)
+  private likedPreviewTracks(liked: Track[]): Track[] {
+    return liked.slice(0, 4)
   }
 
   private savedSongsLabel(count: number): string {
     return count === 1 ? '1 saved song' : `${count} saved songs`
   }
 
-  private likedSongSummary(): string {
-    const count = this.likedTracks().length
-    return `${this.savedSongsLabel(count)} · Phu`
+  private likedSongSummary(count: number): string {
+    return `${this.savedSongsLabel(count)} · ${this.username}`
+  }
+
+  private trackById(id: string): Track {
+    for (let i = 0; i < MUSIC_TRACKS.length; i++) {
+      if (MUSIC_TRACKS[i].id === id) {
+        return MUSIC_TRACKS[i]
+      }
+    }
+    return DEFAULT_TRACK
+  }
+
+  private likedArtists(liked: Track[]): string[] {
+    const tracks = liked
+    const seen: string[] = []
+    for (let i = 0; i < tracks.length; i++) {
+      if (seen.indexOf(tracks[i].artist) < 0) {
+        seen.push(tracks[i].artist)
+      }
+    }
+    return seen
+  }
+
+  private combinedArtists(liked: Track[]): string[] {
+    const artists: string[] = this.likedArtists(liked)
+    if (this.followedArtistIds.length > 0) {
+      const parts = this.followedArtistIds.split('|').filter((s: string): boolean => s.length > 0)
+      for (let i = 0; i < parts.length; i++) {
+        if (artists.indexOf(parts[i]) < 0) {
+          artists.push(parts[i])
+        }
+      }
+    }
+    return artists
+  }
+
+  private artistAccent(name: string): string {
+    const track = MUSIC_TRACKS.find((t: Track): boolean => t.artist === name)
+    return track ? track.accent : '#888888'
+  }
+
+  private followedArtistCount(): number {
+    if (this.followedArtistIds.length === 0) {
+      return 0
+    }
+    return this.followedArtistIds.split('|').filter((s: string) => s.length > 0).length
   }
 
   private contentBottomPadding(): number {
@@ -113,27 +173,66 @@ struct Library {
   }
 
   @Builder
+  private RecentHeader() {
+    Row() {
+      Row({ space: 6 }) {
+        Text('↕')
+          .fontSize(14)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(MeowColors.textPrimary)
+          .hitTestBehavior(HitTestMode.None)
+        Text('Recently Played')
+          .fontSize(15)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(MeowColors.textPrimary)
+          .hitTestBehavior(HitTestMode.None)
+      }
+      Blank()
+      Stack({ alignContent: Alignment.Center }) {
+        Row()
+          .width(32)
+          .height(32)
+          .borderRadius(16)
+          .backgroundColor('rgba(255,255,255,0.07)')
+          .border({ width: 1, color: 'rgba(255,255,255,0.10)' })
+          .hitTestBehavior(HitTestMode.None)
+        Text('☰')
+          .fontSize(16)
+          .fontColor(MeowColors.textSecondary)
+          .hitTestBehavior(HitTestMode.None)
+      }
+      .width(44)
+      .height(44)
+      .hitTestBehavior(HitTestMode.Block)
+      .onClick(() => {
+        console.log('[LibraryPage] sort tapped')
+      })
+    }
+    .width('100%')
+    .alignItems(VerticalAlign.Center)
+  }
+
+  @Builder
   private LibraryTab(label: string) {
     Row() {
       Text(label)
         .fontSize(13)
         .fontWeight(this.activeTab === label ? FontWeight.Bold : FontWeight.Medium)
-        .fontColor(this.activeTab === label ? MeowColors.navyDeep : MeowColors.textSecondary)
+        .fontColor(MeowColors.textPrimary)
     }
-    .height(38)
+    .height(44)
     .padding({ left: 16, right: 16 })
-    .borderRadius(MeowRadius.chip)
-    .backgroundColor(this.activeTab === label ? MeowColors.goldBright : 'rgba(255,255,255,0.07)')
-    .border({ width: 1, color: this.activeTab === label ? 'rgba(255,215,0,0.42)' : 'rgba(255,255,255,0.10)' })
+    .borderRadius(MeowRadius.pill)
+    .backgroundColor(this.activeTab === label ? 'rgba(255,255,255,0.18)' : MeowColors.glassButtonBg)
+    .border({ width: 1, color: 'rgba(255,255,255,0.20)' })
     .alignItems(VerticalAlign.Center)
     .onClick(() => {
-      console.log(`[LibraryPage] tab ${label}`)
       this.activeTab = label
     })
   }
 
   @Builder
-  private LikedSongs() {
+  private LikedSongsBody(liked: Track[], previewTracks: Track[]) {
     Row({ space: 14 }) {
       Stack({ alignContent: Alignment.Center }) {
         Row()
@@ -143,19 +242,19 @@ struct Library {
           .linearGradient({
             angle: 135,
             colors: [
-              ['#4F46E5', 0.0],
-              ['#A78BFA', 0.52],
-              ['#9BE7C1', 1.0]
+              ['#1A0A3D', 0.0],
+              ['#8B1A8B', 0.50],
+              ['#00C4CC', 1.0]
             ]
           })
-        if (this.likedPreviewTracks().length === 0) {
+        if (previewTracks.length === 0) {
           Text('♥')
             .fontSize(28)
             .fontWeight(FontWeight.Bold)
             .fontColor(MeowColors.textPrimary)
         } else {
           Grid() {
-            ForEach(this.likedPreviewTracks(), (track: Track) => {
+            ForEach(previewTracks, (track: Track) => {
               GridItem() {
                 Image(track.artwork)
                   .width(32)
@@ -183,7 +282,7 @@ struct Library {
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
           .fontColor(MeowColors.textPrimary)
-        Text(this.likedSongSummary())
+        Text(this.likedSongSummary(liked.length))
           .fontSize(MeowTypography.bodySize)
           .fontColor(MeowColors.textSecondary)
       }
@@ -198,13 +297,13 @@ struct Library {
         Text('♥')
           .fontSize(18)
           .fontWeight(FontWeight.Bold)
-          .fontColor(this.likedTracks().length > 0 ? MeowColors.goldBright : MeowColors.textTertiary)
+          .fontColor(liked.length > 0 ? '#FF5555' : MeowColors.textTertiary)
       }
       .alignItems(HorizontalAlign.End)
     }
     .width('100%')
     .padding(16)
-    .borderRadius(MeowRadius.large)
+    .borderRadius(20)
     .backgroundColor(MeowColors.solidSurface)
     .border({ width: 1, color: 'rgba(255,255,255,0.09)' })
     .shadow({
@@ -213,20 +312,137 @@ struct Library {
       offsetX: 0,
       offsetY: 6
     })
+    .onClick(() => {
+      if (liked.length > 0) {
+        this.openTrack(liked[0])
+      }
+    })
   }
 
   @Builder
-  private CollectionCard(title: string, subtitle: string, marker: string, accent: string) {
+  private LikedSongs(liked: Track[]) {
+    this.LikedSongsBody(liked, this.likedPreviewTracks(liked))
+  }
+
+  @Builder
+  private LikedSongsGridItem(liked: Track[]) {
+    Column({ space: 10 }) {
+      Stack({ alignContent: Alignment.Center }) {
+        Row()
+          .width('100%')
+          .aspectRatio(1)
+          .borderRadius(20)
+          .linearGradient({
+            angle: 135,
+            colors: [['#1A0A3D', 0.0], ['#8B1A8B', 0.50], ['#00C4CC', 1.0]]
+          })
+        if (liked.length > 0) {
+          Grid() {
+            ForEach(this.likedPreviewTracks(liked), (track: Track) => {
+              GridItem() {
+                Image(track.artwork)
+                  .width('100%')
+                  .height('100%')
+                  .objectFit(ImageFit.Cover)
+                  .clip(true)
+              }
+            }, (track: Track) => 'lp-' + track.id)
+          }
+          .columnsTemplate('1fr 1fr')
+          .rowsTemplate('1fr 1fr')
+          .columnsGap(2)
+          .rowsGap(2)
+          .width('100%')
+          .aspectRatio(1)
+          .borderRadius(20)
+          .clip(true)
+        } else {
+          Text('♥')
+            .fontSize(32)
+            .fontColor(MeowColors.textPrimary)
+        }
+      }
+      .width('100%')
+      .aspectRatio(1)
+      .shadow({ radius: 20, color: 'rgba(139,92,246,0.45)', offsetX: 0, offsetY: 8 })
+      .border({ width: 1, color: 'rgba(255,255,255,0.14)' })
+
+      Column({ space: 3 }) {
+        Text('Liked Songs')
+          .fontSize(14)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(MeowColors.textPrimary)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .width('100%')
+        Text('Playlist · ' + this.username)
+          .fontSize(11)
+          .fontColor('rgba(255,255,255,0.65)')
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .width('100%')
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start)
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+    .onClick(() => {
+      if (liked.length > 0) {
+        this.openTrack(liked[0])
+      }
+    })
+  }
+
+  @Builder
+  private TrackGridItem(track: Track) {
+    Column({ space: 8 }) {
+      Image(track.artwork)
+        .width('100%')
+        .aspectRatio(1)
+        .borderRadius(MeowRadius.control)
+        .objectFit(ImageFit.Cover)
+        .clip(true)
+        .backgroundColor(MeowColors.solidSurface)
+        .border({ width: 1, color: 'rgba(255,255,255,0.06)' })
+      Column({ space: 2 }) {
+        Text(track.title)
+          .fontSize(12)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(MeowColors.textPrimary)
+          .maxLines(2)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .width('100%')
+        Text(track.artist)
+          .fontSize(11)
+          .fontColor(MeowColors.textTertiary)
+          .maxLines(1)
+          .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .width('100%')
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start)
+    }
+    .width('100%')
+    .alignItems(HorizontalAlign.Start)
+    .onClick(() => {
+      this.openTrack(track)
+    })
+  }
+
+  @Builder
+  private CollectionCard(title: string, subtitle: string, marker: string,
+                         accent: string, tabTarget: string = '', extraAction: () => void = () => {}) {
     Row({ space: 13 }) {
       Stack({ alignContent: Alignment.Center }) {
         Row()
           .width(54)
           .height(54)
-          .borderRadius(14)
+          .borderRadius(MeowRadius.card)
           .backgroundColor(accent)
           .opacity(0.82)
         Text(marker)
-          .fontSize(22)
+          .fontSize(MeowTypography.titleSize)
           .fontWeight(FontWeight.Bold)
           .fontColor(MeowColors.textPrimary)
       }
@@ -255,20 +471,30 @@ struct Library {
     .borderRadius(MeowRadius.card)
     .backgroundColor(MeowColors.solidSurface)
     .border({ width: 1, color: 'rgba(255,255,255,0.075)' })
+    .onClick(() => {
+      extraAction()
+      if (tabTarget.length > 0) {
+        this.activeTab = tabTarget
+      }
+    })
   }
 
   @Builder
-  private CollectionGrid() {
+  private CollectionGrid(liked: Track[]) {
     Column({ space: 12 }) {
       this.SectionHeader('Your Collection', 'Saved music organized for quick listening')
       Row({ space: 12 }) {
-        this.CollectionCard('Liked Songs', this.likedSongSummary(), '♥', '#5B5EEB')
+        this.CollectionCard('Liked Songs', this.likedSongSummary(liked.length), '♥', '#5B5EEB', '', () => {
+          if (liked.length > 0) {
+            this.openTrack(liked[0])
+          }
+        })
         this.CollectionCard('Daily Rotation', '4 playlists · updated', '♪', '#1B7D66')
       }
       .width('100%')
       Row({ space: 12 }) {
-        this.CollectionCard('Albums', `${MUSIC_TRACKS.length} releases`, '▤', '#6B4FB8')
-        this.CollectionCard('Artists', '3 followed artists', '◉', '#9B3F58')
+        this.CollectionCard('Albums', `${MUSIC_TRACKS.length} releases`, '▤', '#6B4FB8', 'Album')
+        this.CollectionCard('Artists', `${this.followedArtistCount()} followed`, '◉', '#9B3F58', 'Artist')
       }
       .width('100%')
     }
@@ -276,12 +502,12 @@ struct Library {
   }
 
   @Builder
-  private PlaylistCard(track: Track, label: string) {
+  private PlaylistCard(track: Track, label: string, likedCount: number) {
     Row({ space: 14 }) {
       Image(track.artwork)
         .width(74)
         .height(74)
-        .borderRadius(14)
+        .borderRadius(MeowRadius.card)
         .objectFit(ImageFit.Cover)
         .clip(true)
         .backgroundColor(MeowColors.solidSurface)
@@ -294,7 +520,7 @@ struct Library {
           .fontColor(MeowColors.textPrimary)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
-        Text(`${track.kind} · ${track.artist}`)
+        Text(`Playlist · ${likedCount} songs`)
           .fontSize(MeowTypography.bodySize)
           .fontColor(MeowColors.textSecondary)
           .maxLines(1)
@@ -312,6 +538,9 @@ struct Library {
     .borderRadius(MeowRadius.card)
     .backgroundColor(MeowColors.solidSurface)
     .border({ width: 1, color: 'rgba(255,255,255,0.07)' })
+    .onClick(() => {
+      this.openTrack(track)
+    })
   }
 
   @Builder
@@ -341,7 +570,7 @@ struct Library {
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .width('100%')
     }
-    .layoutWeight(1)
+    .width('100%')
     .alignItems(HorizontalAlign.Start)
     .onClick(() => {
       this.openTrack(track)
@@ -349,25 +578,27 @@ struct Library {
   }
 
   @Builder
-  private AlbumGrid() {
-    Column({ space: 18 }) {
-      Row({ space: 14 }) {
-        this.LibraryAlbumTile(MUSIC_TRACKS[0])
-        this.LibraryAlbumTile(MUSIC_TRACKS[1])
+  private AlbumGrid(liked: Track[]) {
+    if (liked.length === 0) {
+      Text('Like songs to build your album collection.')
+        .fontSize(MeowTypography.bodySize)
+        .fontColor(MeowColors.textTertiary)
+        .textAlign(TextAlign.Center)
+        .width('100%')
+        .padding({ top: 16, bottom: 16 })
+    } else {
+      Grid() {
+        ForEach(liked, (track: Track) => {
+          GridItem() {
+            this.LibraryAlbumTile(track)
+          }
+        }, (track: Track) => `album-${track.id}`)
       }
-      .width('100%')
-      Row({ space: 14 }) {
-        this.LibraryAlbumTile(MUSIC_TRACKS[2])
-        this.LibraryAlbumTile(MUSIC_TRACKS[3])
-      }
-      .width('100%')
-      Row({ space: 14 }) {
-        this.LibraryAlbumTile(MUSIC_TRACKS[4])
-        this.LibraryAlbumTile(MUSIC_TRACKS[5])
-      }
+      .columnsTemplate('1fr 1fr 1fr')
+      .columnsGap(10)
+      .rowsGap(16)
       .width('100%')
     }
-    .width('100%')
   }
 
   @Builder
@@ -386,6 +617,7 @@ struct Library {
       }
       .width(62)
       .height(62)
+      .hitTestBehavior(HitTestMode.None)
 
       Column({ space: 5 }) {
         Text(name)
@@ -398,105 +630,175 @@ struct Library {
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
+
+      Row() {
+        Text(PlayerManager.isFollowed(name, this.followedArtistIds) ? 'Following' : 'Follow')
+          .fontSize(12)
+          .fontWeight(FontWeight.Medium)
+          .fontColor(MeowColors.textPrimary)
+      }
+      .height(44)
+      .padding({ left: 14, right: 14 })
+      .borderRadius(22)
+      .backgroundColor(PlayerManager.isFollowed(name, this.followedArtistIds)
+        ? accent
+        : MeowColors.transparent)
+      .border({
+        width: 1.5,
+        color: PlayerManager.isFollowed(name, this.followedArtistIds)
+          ? accent
+          : 'rgba(255,255,255,0.40)'
+      })
+      .hitTestBehavior(HitTestMode.Block)
+      .onClick(() => {
+        PlayerManager.toggleFollowedInStorage(name, this.followedArtistIds)
+      })
     }
     .width('100%')
     .padding({ top: 10, bottom: 10 })
-  }
-
-  @Builder
-  private AddRow(label: string, rounded: boolean) {
-    Row({ space: 14 }) {
-      Stack({ alignContent: Alignment.Center }) {
-        if (rounded) {
-          Circle().width(62).height(62).fill('rgba(255,255,255,0.08)')
-        } else {
-          Row().width(62).height(62).borderRadius(MeowRadius.card).backgroundColor('rgba(255,255,255,0.08)')
-        }
-        Text('+')
-          .fontSize(32)
-          .fontColor(MeowColors.textSecondary)
+    .onClick(async () => {
+      const track = MUSIC_TRACKS.find((t: Track): boolean => t.artist === name)
+      if (track) {
+        PlayerManager.playTrack(track)
+        await router.pushUrl({ url: 'pages/main/ArtistSongs', params: { artist: name } })
       }
-      .width(62)
-      .height(62)
-
-      Text(label)
-        .fontSize(17)
-        .fontWeight(FontWeight.Medium)
-        .fontColor(MeowColors.textPrimary)
-        .layoutWeight(1)
-    }
-    .width('100%')
-    .padding({ top: 8, bottom: 8 })
-    .onClick(() => {
-      this.handleAdd()
     })
   }
 
   @Builder
-  private PlaylistContent() {
-    Column({ space: 16 }) {
-      this.LikedSongs()
-      if (this.likedTracks().length === 0) {
-        Text('Your favorite tracks will gather here.')
-          .fontSize(MeowTypography.bodySize)
-          .fontColor(MeowColors.textTertiary)
-          .width('100%')
-          .padding({ left: 16, right: 16, top: 14, bottom: 14 })
-          .borderRadius(MeowRadius.card)
-          .backgroundColor('rgba(255,255,255,0.045)')
-          .border({ width: 1, color: 'rgba(255,255,255,0.07)' })
-      } else {
-        ForEach(this.likedTracks(), (track: Track) => {
-          SongCard({ track: track })
-        }, (track: Track) => track.id)
-      }
-      this.CollectionGrid()
-      Column({ space: 12 }) {
-        this.SectionHeader('Playlists', 'Made from your recent listening')
-        this.PlaylistCard(MUSIC_TRACKS[0], 'PhuiSic Favorites')
-        this.PlaylistCard(MUSIC_TRACKS[3], 'Late Night Focus')
-        this.PlaylistCard(MUSIC_TRACKS[5], 'Soft Waves')
+  private LikedTrackRow(track: Track) {
+    Column() {
+      Row({ space: 14 }) {
+        Image(track.artwork)
+          .width(56)
+          .height(56)
+          .objectFit(ImageFit.Cover)
+          .borderRadius(MeowRadius.control)
+          .clip(true)
+          .backgroundColor(MeowColors.solidSurface)
+          .flexShrink(0)
+          .hitTestBehavior(HitTestMode.None)
+
+        Column({ space: 5 }) {
+          Text(track.title)
+            .fontSize(15)
+            .fontWeight(FontWeight.Bold)
+            .fontColor(MeowColors.textPrimary)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+          Text(track.artist)
+            .fontSize(13)
+            .fontColor(MeowColors.textSecondary)
+            .maxLines(1)
+            .textOverflow({ overflow: TextOverflow.Ellipsis })
+        }
+        .layoutWeight(1)
+        .alignItems(HorizontalAlign.Start)
+        .justifyContent(FlexAlign.Center)
+        .hitTestBehavior(HitTestMode.None)
+
+        Column({ space: 4 }) {
+          Text('♥')
+            .fontSize(18)
+            .fontColor(track.accent)
+          Text(track.durationLabel)
+            .fontSize(12)
+            .fontColor(MeowColors.textTertiary)
+        }
+        .alignItems(HorizontalAlign.End)
       }
       .width('100%')
+      .height(72)
+      .padding({ left: 4, right: 4 })
+      .alignItems(VerticalAlign.Center)
+
+      Row()
+        .width('100%')
+        .height(1)
+        .backgroundColor('rgba(255,255,255,0.06)')
+        .margin({ left: 70 })
+    }
+    .width('100%')
+    .onClick(() => {
+      this.openTrack(track)
+    })
+  }
+
+  @Builder
+  private PlaylistContent(liked: Track[]) {
+    Column({ space: 16 }) {
+      this.RecentHeader()
+      if (liked.length === 0) {
+        Column({ space: 12 }) {
+          Text('♥')
+            .fontSize(36)
+            .fontColor(MeowColors.textTertiary)
+          Text('Like songs to build your playlist.')
+            .fontSize(MeowTypography.bodySize)
+            .fontColor(MeowColors.textTertiary)
+            .textAlign(TextAlign.Center)
+        }
+        .width('100%')
+        .padding({ top: 32, bottom: 32 })
+        .alignItems(HorizontalAlign.Center)
+      } else {
+        Grid() {
+          ForEach(liked, (track: Track) => {
+            GridItem() {
+              this.TrackGridItem(track)
+            }
+          }, (track: Track) => `pg-${track.id}`)
+        }
+        .columnsTemplate('1fr 1fr 1fr')
+        .columnsGap(10)
+        .rowsGap(16)
+        .width('100%')
+      }
     }
     .width('100%')
   }
 
   @Builder
-  private AlbumContent() {
+  private AlbumContent(liked: Track[]) {
     Column({ space: 16 }) {
       this.SectionHeader('Albums', 'Full releases and saved singles')
-      this.AlbumGrid()
-
-      Column({ space: 12 }) {
-        this.SectionHeader('Recently Saved', 'Albums and singles with full details')
-        ForEach(MUSIC_TRACKS.slice(6, 10), (track: Track) => {
-          SongCard({ track: track })
-        }, (track: Track) => `${track.id}`)
-      }
-      .width('100%')
+      this.AlbumGrid(liked)
     }
     .width('100%')
   }
 
   @Builder
-  private ArtistContent() {
-    Column({ space: 14 }) {
-      this.SectionHeader('Artists', 'People behind your saved music')
-      Column({ space: 2 }) {
-        this.ArtistRow('Irokz', 'Artist · 3 saved tracks', '#1FA77B')
-        this.ArtistRow('DJ Asul', 'Artist · recently played', '#8F1D2C')
-        this.ArtistRow('PhuiSic Studio', 'Artist · mascot mixes', '#7B4AB8')
-        this.AddRow('Add Artist', true)
-        this.AddRow('Add Podcast', false)
+  private ArtistContentBody(artists: string[]) {
+    Column({ space: 16 }) {
+      this.RecentHeader()
+      if (artists.length === 0) {
+        Column({ space: 10 }) {
+          Text('◉')
+            .fontSize(32)
+            .fontColor(MeowColors.textTertiary)
+          Text('Follow artists or like their songs to see them here.')
+            .fontSize(MeowTypography.bodySize)
+            .fontColor(MeowColors.textTertiary)
+            .textAlign(TextAlign.Center)
+        }
+        .width('100%')
+        .padding({ top: 32, bottom: 32 })
+        .alignItems(HorizontalAlign.Center)
+      } else {
+        Column({ space: 2 }) {
+          ForEach(artists, (name: string) => {
+            this.ArtistRow(name, 'Artist', this.artistAccent(name))
+          }, (name: string) => name)
+        }
+        .width('100%')
       }
-      .width('100%')
-      .padding(18)
-      .borderRadius(MeowRadius.large)
-      .backgroundColor(MeowColors.solidSurface)
-      .border({ width: 1, color: 'rgba(255,255,255,0.08)' })
     }
     .width('100%')
+  }
+
+  @Builder
+  private ArtistContent(liked: Track[]) {
+    this.ArtistContentBody(this.combinedArtists(liked))
   }
 
   @Builder
@@ -525,13 +827,13 @@ struct Library {
   }
 
   @Builder
-  private ActiveTabContent() {
+  private ActiveTabContent(liked: Track[]) {
     if (this.activeTab === 'Playlist') {
-      this.PlaylistContent()
+      this.PlaylistContent(liked)
     } else if (this.activeTab === 'Album') {
-      this.AlbumContent()
+      this.AlbumContent(liked)
     } else {
-      this.ArtistContent()
+      this.ArtistContent(liked)
     }
   }
 
@@ -544,6 +846,7 @@ struct Library {
     }
     .width('100%')
     .zIndex(10)
+    .onClick(() => {})
   }
 
   build() {
@@ -564,7 +867,7 @@ struct Library {
         Column({ space: MeowSpacing.sectionGap }) {
           this.LibraryHeader()
           this.TabBar()
-          this.ActiveTabContent()
+          this.ActiveTabContent(this.likedTracks())
         }
         .width('100%')
         .padding({ left: MeowSpacing.pagePadding, right: MeowSpacing.pagePadding, top: 64, bottom: MeowSpacing.mainContentBottomPadding + 24 })

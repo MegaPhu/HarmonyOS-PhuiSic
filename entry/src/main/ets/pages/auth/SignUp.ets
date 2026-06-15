@@ -11,11 +11,22 @@ struct SignUp {
   @State private email: string = ''
   @State private password: string = ''
   @State private confirmPassword: string = ''
+  @State private validationError: string = ''
 
   private async signUp(): Promise<void> {
+    if (this.fullName.trim().length === 0 || this.email.trim().length === 0 ||
+      this.password.length === 0) {
+      this.validationError = 'Please fill in all fields.'
+      return
+    }
+    if (this.password !== this.confirmPassword) {
+      this.validationError = 'Passwords do not match.'
+      return
+    }
+    this.validationError = ''
     console.log('[SignUpPage] demo sign up')
-    AppStorage.SetOrCreate<boolean>('isLoggedIn', true)
-    AppStorage.SetOrCreate<string>('mockUsername', this.fullName.length > 0 ? this.fullName : 'Phu')
+    AppStorage.setOrCreate<boolean>('isLoggedIn', true)
+    AppStorage.setOrCreate<string>('mockUsername', this.fullName.trim())
     await router.replaceUrl({ url: 'pages/Index' })
   }
 
@@ -46,7 +57,7 @@ struct SignUp {
       Scroll() {
         Column({ space: 24 }) {
           Row() {
-            Text('<')
+            Text('‹')
               .fontSize(28)
               .fontWeight(FontWeight.Bold)
               .fontColor(MeowColors.textPrimary)
@@ -62,7 +73,7 @@ struct SignUp {
             Text('♫')
               .fontSize(30)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#c9a84c')
+              .fontColor(MeowColors.goldBright)
               .opacity(0.86)
           }
           .width('100%')
@@ -121,15 +132,23 @@ struct SignUp {
                 showPasswordToggle: true
               })
 
-              Text('By signing up, you are agreeing to our Terms of use and Privacy Policy')
+              Text('By signing up, you agree to our Terms of use and Privacy Policy')
                 .fontSize(MeowTypography.captionSize)
                 .fontColor(MeowColors.textTertiary)
                 .textAlign(TextAlign.Center)
                 .width('100%')
 
+              if (this.validationError.length > 0) {
+                Text(this.validationError)
+                  .fontSize(12)
+                  .fontColor(MeowColors.errorRed)
+                  .textAlign(TextAlign.Center)
+                  .width('100%')
+              }
+
               PrimaryButton({
                 label: 'Sign Up',
-                action: () => {
+                clickAction: () => {
                   this.signUp()
                 }
               })

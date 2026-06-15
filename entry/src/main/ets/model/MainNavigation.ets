@@ -48,9 +48,6 @@ export class MainNavigation {
       return MainNavigation.LIBRARY
     }
     if (tab === MainNavigation.LIBRARY) {
-      return MainNavigation.PREMIUM
-    }
-    if (tab === MainNavigation.PREMIUM) {
       return MainNavigation.PROFILE
     }
     return MainNavigation.HOME
@@ -66,9 +63,6 @@ export class MainNavigation {
     if (tab === MainNavigation.LIBRARY) {
       return MainNavigation.SEARCH
     }
-    if (tab === MainNavigation.PREMIUM) {
-      return MainNavigation.LIBRARY
-    }
-    return MainNavigation.PREMIUM
+    return MainNavigation.LIBRARY
   }
 }

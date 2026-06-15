@@ -5,7 +5,7 @@ export struct SecondaryButton {
   @Prop label: string = 'Cancel'
   @Prop ghost: boolean = false
   @Prop isEnabled: boolean = true
-  action: () => void = () => {}
+  clickAction: () => void = () => {}
   @State private pressed: boolean = false
 
   build() {
@@ -42,7 +42,7 @@ export struct SecondaryButton {
       })
       .onClick(() => {
         if (this.isEnabled) {
-          this.action()
+          this.clickAction()
         }
       })
       .animation({ duration: 140, curve: Curve.EaseOut })

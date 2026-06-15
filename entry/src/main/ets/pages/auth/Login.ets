@@ -11,10 +11,16 @@ import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme
 struct Login {
   @State private email: string = ''
   @State private password: string = ''
+  @State private validationError: string = ''
 
   private async login(): Promise<void> {
+    if (this.email.trim().length === 0 || this.password.length === 0) {
+      this.validationError = 'Please enter your email and password.'
+      return
+    }
+    this.validationError = ''
     console.log('[LoginPage] demo login')
-    AppStorage.SetOrCreate<boolean>('isLoggedIn', true)
+    AppStorage.setOrCreate<boolean>('isLoggedIn', true)
     await router.replaceUrl({ url: 'pages/Index' })
   }
 
@@ -46,6 +52,9 @@ struct Login {
     .borderRadius(MeowRadius.pill)
     .backgroundColor('rgba(255,255,255,0.10)')
     .border({ width: 1, color: 'rgba(255,255,255,0.18)' })
+    .onClick(() => {
+      this.login()
+    })
   }
 
   @Builder
@@ -91,7 +100,7 @@ struct Login {
             Text('♪')
               .fontSize(30)
               .fontWeight(FontWeight.Bold)
-              .fontColor('#c9a84c')
+              .fontColor(MeowColors.goldBright)
               .opacity(0.86)
           }
           .justifyContent(FlexAlign.Start)
@@ -130,6 +139,14 @@ struct Login {
                 showPasswordToggle: true
               })
 
+              if (this.validationError.length > 0) {
+                Text(this.validationError)
+                  .fontSize(12)
+                  .fontColor(MeowColors.errorRed)
+                  .textAlign(TextAlign.Center)
+                  .width('100%')
+              }
+
               Text('Forgot Password?')
                 .fontSize(12)
                 .fontWeight(FontWeight.Bold)
@@ -142,7 +159,7 @@ struct Login {
 
               PrimaryButton({
                 label: 'Log In',
-                action: () => {
+                clickAction: () => {
                   this.login()
                 }
               })

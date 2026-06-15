@@ -3,6 +3,7 @@ import { DEFAULT_TRACK, Track } from '../model/MusicData'
 import { PlayerManager } from '../model/PlayerManager'
 import { MeowColors, MeowRadius, MeowTypography } from '../theme/theme'
 
+@Preview
 @Component
 export struct SongCard {
   @Prop track: Track = DEFAULT_TRACK
@@ -12,7 +13,19 @@ export struct SongCard {
   private async openPlayer(): Promise<void> {
     console.log(`[SongCard] open ${this.track.title}`)
     PlayerManager.playTrack(this.track)
-    await router.pushUrl({ url: 'pages/main/Player' })
+    const state = router.getState()
+    if (state.name !== 'Player') {
+      await router.pushUrl({ url: 'pages/main/Player' })
+    }
+  }
+
+  private async openArtistPage(): Promise<void> {
+    console.log(`[SongCard] open artist ${this.track.artist}`)
+    await router.pushUrl({ url: 'pages/main/ArtistSongs', params: { artist: this.track.artist } })
+  }
+
+  private trackLiked(): boolean {
+    return PlayerManager.isLiked(this.track, this.likedTrackIds)
   }
 
   @Builder
@@ -28,17 +41,17 @@ export struct SongCard {
   }
 
   @Builder
-  private LikeButton() {
+  private LikeButton(liked: boolean) {
     Stack({ alignContent: Alignment.Center }) {
-      Text(PlayerManager.isLiked(this.track, this.likedTrackIds) ? '♥' : '♡')
+      Text(liked ? '♥' : '♡')
         .fontSize(this.compact ? 20 : 22)
         .fontWeight(FontWeight.Bold)
-        .fontColor(PlayerManager.isLiked(this.track, this.likedTrackIds) ? this.track.accent : MeowColors.textSecondary)
+        .fontColor(liked ? this.track.accent : MeowColors.textSecondary)
     }
-      .width(this.compact ? 32 : 36)
-      .height(this.compact ? 34 : 38)
-      .borderRadius(this.compact ? 16 : 18)
-      .backgroundColor(PlayerManager.isLiked(this.track, this.likedTrackIds) ? this.track.accentSoft : MeowColors.glassBgSoft)
+      .width(44)
+      .height(44)
+      .borderRadius(MeowRadius.card)
+      .backgroundColor(liked ? this.track.accentSoft : MeowColors.glassBgSoft)
       .onClick(() => {
         console.log(`[SongCard] toggle like ${this.track.title}`)
         PlayerManager.toggleLikedInStorage(this.track, this.likedTrackIds)
@@ -56,17 +69,20 @@ export struct SongCard {
           .fontColor(MeowColors.textPrimary)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
-        Text(`${this.track.kind} · ${this.track.artist}`)
+        Text(this.track.artist)
           .fontSize(MeowTypography.captionSize)
-          .fontColor(MeowColors.textQuaternary)
+          .fontColor(MeowColors.textSecondary)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
+          .onClick(() => {
+            this.openArtistPage()
+          })
       }
       .layoutWeight(1)
       .alignItems(HorizontalAlign.Start)
 
       Column({ space: 2 }) {
-        this.LikeButton()
+        this.LikeButton(this.trackLiked())
         Text(this.track.durationLabel)
           .fontSize(MeowTypography.captionSize)
           .fontColor(MeowColors.textTertiary)
