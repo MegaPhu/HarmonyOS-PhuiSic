@@ -4,6 +4,7 @@ import { MiniPlayer } from '../../components/MiniPlayer'
 import { DEFAULT_TRACK, MUSIC_TRACKS, Track } from '../../model/MusicData'
 import { PlayerManager } from '../../model/PlayerManager'
 import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme/theme'
+import { SheetHandle } from '../../components/SheetHandle'
 
 @Entry
 @Component
@@ -374,11 +375,7 @@ struct ArtistSongs {
   @Builder
   private ArtistMenuSheet() {
     Column({ space: 0 }) {
-      Row()
-        .width(40)
-        .height(4)
-        .borderRadius(2)
-        .backgroundColor('rgba(255,255,255,0.30)')
+      SheetHandle()
         .margin({ bottom: 16 })
 
       Row({ space: 14 }) {
@@ -460,7 +457,7 @@ struct ArtistSongs {
     .width('100%')
     .padding({ left: 16, right: 16, top: 16, bottom: 36 })
     .backgroundColor(MeowColors.solidSurface)
-    .borderRadius({ topLeft: 24, topRight: 24, bottomLeft: 0, bottomRight: 0 })
+    .borderRadius({ topLeft: MeowRadius.bottomSheet, topRight: MeowRadius.bottomSheet, bottomLeft: 0, bottomRight: 0 })
     .border({ width: 1, color: MeowColors.borderSubtle })
   }
 
@@ -499,14 +496,15 @@ struct ArtistSongs {
       .scrollBar(BarState.Off)
       .zIndex(1)
 
-      Column() {
-        MiniPlayer()
-          .margin({ left: 14, right: 14, bottom: MeowSpacing.miniPlayerBottomMargin })
-        BottomNavBar({ activeTab: '' })
-      }
-      .width('100%')
-      .zIndex(10)
-      .hitTestBehavior(HitTestMode.Block)
+      MiniPlayer()
+        .margin({
+          left: 14,
+          right: 14,
+          bottom: MeowSpacing.bottomNavHeight + MeowSpacing.bottomNavBottomOffset + MeowSpacing.miniPlayerBottomMargin
+        })
+        .zIndex(20)
+      BottomNavBar({ activeTab: '' })
+        .zIndex(30)
 
       if (this.showMenuSheet) {
         Column()

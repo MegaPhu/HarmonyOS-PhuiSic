@@ -103,10 +103,6 @@ struct Library {
     return this.followedArtistIds.split('|').filter((s: string) => s.length > 0).length
   }
 
-  private contentBottomPadding(): number {
-    return MeowSpacing.mainContentBottomPadding + 24
-  }
-
   @Builder
   private SearchGlyph() {
     Stack({ alignContent: Alignment.Center }) {
@@ -194,7 +190,7 @@ struct Library {
           .height(32)
           .borderRadius(16)
           .backgroundColor('rgba(255,255,255,0.07)')
-          .border({ width: 1, color: 'rgba(255,255,255,0.10)' })
+          .border({ width: 1, color: MeowColors.borderStrong })
           .hitTestBehavior(HitTestMode.None)
         Text('☰')
           .fontSize(16)
@@ -305,7 +301,7 @@ struct Library {
     .padding(16)
     .borderRadius(20)
     .backgroundColor(MeowColors.solidSurface)
-    .border({ width: 1, color: 'rgba(255,255,255,0.09)' })
+    .border({ width: 1, color: MeowColors.borderSoft })
     .shadow({
       radius: 16,
       color: MeowColors.shadowNavy,
@@ -470,7 +466,7 @@ struct Library {
     .padding({ left: 12, right: 12 })
     .borderRadius(MeowRadius.card)
     .backgroundColor(MeowColors.solidSurface)
-    .border({ width: 1, color: 'rgba(255,255,255,0.075)' })
+    .border({ width: 1, color: MeowColors.borderSubtle })
     .onClick(() => {
       extraAction()
       if (tabTarget.length > 0) {
@@ -837,18 +833,6 @@ struct Library {
     }
   }
 
-  @Builder
-  private BottomChrome() {
-    Column() {
-      MiniPlayer()
-        .margin({ left: 14, right: 14, bottom: MeowSpacing.miniPlayerBottomMargin })
-      BottomNavBar({ activeTab: 'Library' })
-    }
-    .width('100%')
-    .zIndex(10)
-    .onClick(() => {})
-  }
-
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
       Column()
@@ -870,15 +854,28 @@ struct Library {
           this.ActiveTabContent(this.likedTracks())
         }
         .width('100%')
-        .padding({ left: MeowSpacing.pagePadding, right: MeowSpacing.pagePadding, top: 64, bottom: MeowSpacing.mainContentBottomPadding + 24 })
+        .padding({
+          left: MeowSpacing.pagePadding,
+          right: MeowSpacing.pagePadding,
+          top: 64,
+          bottom: MeowSpacing.bottomContentPaddingWithMiniPlayer
+        })
       }
       .width('100%')
       .height('100%')
       .scrollable(ScrollDirection.Vertical)
       .scrollBar(BarState.Off)
-      .zIndex(1)
+      .zIndex(0)
 
-      this.BottomChrome()
+      MiniPlayer()
+        .margin({
+          left: 14,
+          right: 14,
+          bottom: MeowSpacing.bottomNavHeight + MeowSpacing.bottomNavBottomOffset + MeowSpacing.miniPlayerBottomMargin
+        })
+        .zIndex(20)
+      BottomNavBar({ activeTab: 'Library' })
+        .zIndex(30)
     }
     .width('100%')
     .height('100%')

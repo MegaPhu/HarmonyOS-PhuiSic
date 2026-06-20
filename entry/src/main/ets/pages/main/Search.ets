@@ -39,16 +39,10 @@ struct SearchPage {
     if (this.query.length === 0) {
       return true
     }
+    // Match by song title only — artist/album/language/genre/mood are
+    // intentionally excluded so a search returns just title hits.
     const q = this.query.toLowerCase()
-    const searchable = [
-      track.title,
-      track.artist,
-      track.album,
-      track.language,
-      track.genre,
-      track.mood
-    ].join(' ').toLowerCase()
-    return searchable.includes(q)
+    return track.title.toLowerCase().includes(q)
   }
 
   private filteredTracks(): Track[] {
@@ -75,11 +69,7 @@ struct SearchPage {
     if (this.query.length > 0) {
       return 'No matches for "' + this.query + '"'
     }
-    return 'Try a song, artist, or album name.'
-  }
-
-  private contentBottomPadding(): number {
-    return MeowSpacing.mainContentBottomPadding + 24
+    return 'Try a song name.'
   }
 
   private clearQuery(): void {
@@ -146,7 +136,7 @@ struct SearchPage {
     .padding({ left: 16, right: 16 })
     .borderRadius(MeowRadius.control)
     .backgroundColor(MeowColors.searchBarBg)
-    .border({ width: 1, color: this.query.length > 0 ? 'rgba(212,175,55,0.42)' : 'rgba(255,255,255,0.10)' })
+    .border({ width: 1, color: this.query.length > 0 ? 'rgba(212,175,55,0.42)' : MeowColors.borderStrong })
     .shadow({
       radius: this.query.length > 0 ? 16 : 0,
       color: this.query.length > 0 ? 'rgba(212,175,55,0.14)' : 'rgba(0,0,0,0)',
@@ -193,7 +183,7 @@ struct SearchPage {
     .layoutWeight(1)
     .height(150)
     .borderRadius(MeowRadius.card)
-    .border({ width: 1, color: 'rgba(255,255,255,0.10)' })
+    .border({ width: 1, color: MeowColors.borderStrong })
     .clip(true)
     .shadow({
       radius: 10,
@@ -208,8 +198,10 @@ struct SearchPage {
           params: { language: category.title }
         })
       } else {
-        console.log(`[SearchPage] category ${category.title}`)
-        this.query = category.title.toLowerCase()
+        await router.pushUrl({
+          url: 'pages/main/LanguageDetail',
+          params: { mood: category.title }
+        })
       }
     })
   }
@@ -476,18 +468,6 @@ struct SearchPage {
     this.ResultsContentBody(this.filteredTracks())
   }
 
-  @Builder
-  private BottomChrome() {
-    Column() {
-      MiniPlayer()
-        .margin({ left: 14, right: 14, bottom: MeowSpacing.miniPlayerBottomMargin })
-      BottomNavBar({ activeTab: 'Search' })
-    }
-    .width('100%')
-    .zIndex(10)
-    .onClick(() => {})
-  }
-
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
       Column()
@@ -525,15 +505,28 @@ struct SearchPage {
           }
         }
         .width('100%')
-        .padding({ left: MeowSpacing.pagePadding, right: MeowSpacing.pagePadding, top: 64, bottom: MeowSpacing.mainContentBottomPadding + 24 })
+        .padding({
+          left: MeowSpacing.pagePadding,
+          right: MeowSpacing.pagePadding,
+          top: 64,
+          bottom: MeowSpacing.bottomContentPaddingWithMiniPlayer
+        })
       }
       .width('100%')
       .height('100%')
       .scrollable(ScrollDirection.Vertical)
       .scrollBar(BarState.Off)
-      .zIndex(1)
+      .zIndex(0)
 
-      this.BottomChrome()
+      MiniPlayer()
+        .margin({
+          left: 14,
+          right: 14,
+          bottom: MeowSpacing.bottomNavHeight + MeowSpacing.bottomNavBottomOffset + MeowSpacing.miniPlayerBottomMargin
+        })
+        .zIndex(20)
+      BottomNavBar({ activeTab: 'Search' })
+        .zIndex(30)
     }
     .width('100%')
     .height('100%')

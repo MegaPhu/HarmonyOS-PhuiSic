@@ -10,7 +10,7 @@ export struct PrimaryButton {
 
   build() {
     Button(this.label)
-      .height(54)
+      .height(56)
       .width('100%')
       .fontSize(16)
       .fontWeight(FontWeight.Bold)

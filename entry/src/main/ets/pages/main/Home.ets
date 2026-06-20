@@ -10,6 +10,10 @@ import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme
 struct Home {
   @State private activeCategory: string = 'All'
   @StorageLink('currentTrack') private currentTrack: Track = DEFAULT_TRACK
+  // Shared profile source of truth (same keys Profile.ets reads/writes) so the
+  // header avatar + greeting stay in sync with the Profile page everywhere.
+  @StorageLink('mockUsername') private mockUsername: string = 'Phu'
+  @StorageLink('profileAvatarAccent') private profileAvatarAccent: string = '#FFD700'
 
   private async openTrack(track: Track): Promise<void> {
     console.log(`[HomePage] open ${track.title}`)
@@ -21,15 +25,24 @@ struct Home {
     await router.pushUrl({ url: 'pages/main/Player' })
   }
 
+  // Derived from the shared profile keys — never hardcode name/avatar here.
+  private displayName(): string {
+    return this.mockUsername.length > 0 ? this.mockUsername : 'Phu'
+  }
+
+  private avatarInitial(): string {
+    return this.displayName().charAt(0).toUpperCase()
+  }
+
   private greetingText(): string {
     const hour = new Date().getHours()
+    let base = 'Good evening'
     if (hour < 12) {
-      return 'Good morning'
+      base = 'Good morning'
+    } else if (hour < 18) {
+      base = 'Good afternoon'
     }
-    if (hour < 18) {
-      return 'Good afternoon'
-    }
-    return 'Good evening'
+    return `${base}, ${this.displayName()}`
   }
 
   private visibleTracks(): Track[] {
@@ -61,7 +74,7 @@ struct Home {
   }
 
   private contentBottomPadding(): number {
-    return MeowSpacing.mainContentBottomPadding + 24
+    return MeowSpacing.bottomContentPaddingWithMiniPlayer
   }
 
   @Builder
@@ -71,16 +84,9 @@ struct Home {
         .width(48)
         .height(48)
         .borderRadius(24)
-        .linearGradient({
-          angle: 135,
-          colors: [
-            [MeowColors.goldDark, 0.0],
-            [MeowColors.goldBright, 0.36],
-            [MeowColors.goldSoft, 0.72],
-            [MeowColors.goldDeep, 1.0]
-          ]
-        })
-      Text('P')
+        .backgroundColor(this.profileAvatarAccent)
+        .shadow({ radius: 16, color: 'rgba(0,0,0,0.32)', offsetX: 0, offsetY: 4 })
+      Text(this.avatarInitial())
         .fontSize(26)
         .fontWeight(FontWeight.Bold)
         .fontColor(MeowColors.navyDeep)
@@ -170,9 +176,10 @@ struct Home {
         .layoutWeight(1)
       if (showAction) {
         Text('Show all')
-          .fontSize(12)
-          .fontWeight(FontWeight.Bold)
+          .fontSize(MeowTypography.smallLabelSize)
+          .fontWeight(FontWeight.Medium)
           .fontColor(MeowColors.goldBright)
+          .padding({ left: 10, right: 2, top: 6, bottom: 6 })
           .onClick(() => {
             router.pushUrl({ url: 'pages/main/Library' })
           })
@@ -184,7 +191,7 @@ struct Home {
 
   @Builder
   private RecentSquareCard(track: Track) {
-    Column({ space: 9 }) {
+    Column({ space: 10 }) {
       Image(track.artwork)
         .width(136)
         .height(136)
@@ -200,15 +207,15 @@ struct Home {
           offsetY: 6
         })
       Text(track.title)
-        .fontSize(13)
-        .fontWeight(FontWeight.Bold)
+        .fontSize(15)
+        .fontWeight(FontWeight.Medium)
         .fontColor(MeowColors.textPrimary)
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .width('100%')
       Text(track.artist)
-        .fontSize(11)
-        .fontColor(MeowColors.textTertiary)
+        .fontSize(12)
+        .fontColor(MeowColors.textSecondary)
         .maxLines(1)
         .textOverflow({ overflow: TextOverflow.Ellipsis })
         .width('100%')
@@ -222,7 +229,7 @@ struct Home {
 
   @Builder
   private RecentGrid() {
-    Column({ space: 12 }) {
+    Column({ space: MeowSpacing.sectionTitleGap }) {
       this.SectionHeader('Recently Played', true)
       Scroll() {
         Row({ space: 14 }) {
@@ -267,8 +274,8 @@ struct Home {
 
       Column({ space: 6 }) {
         Text(track.title)
-          .fontSize(15)
-          .fontWeight(FontWeight.Bold)
+          .fontSize(16)
+          .fontWeight(FontWeight.Medium)
           .fontColor(MeowColors.textPrimary)
           .maxLines(2)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -291,10 +298,10 @@ struct Home {
 
   @Builder
   private HorizontalPicks(title: string, startIndex: number) {
-    Column({ space: 12 }) {
+    Column({ space: MeowSpacing.sectionTitleGap }) {
       this.SectionHeader(title)
       Scroll() {
-        Row({ space: 18 }) {
+        Row({ space: 14 }) {
           ForEach(this.visibleTracks().slice(startIndex, startIndex + 6), (song: Track) => {
             this.PickCard(song)
           }, (song: Track) => 'pick' + startIndex.toString() + '-' + song.id)
@@ -310,7 +317,7 @@ struct Home {
 
   @Builder
   private HomeContent() {
-    Column({ space: 28 }) {
+    Column({ space: MeowSpacing.sectionGap }) {
       this.Header()
       this.CategoryTabs()
       if (this.visibleTracks().length === 0) {
@@ -330,7 +337,12 @@ struct Home {
       }
     }
     .width('100%')
-    .padding({ left: 16, right: 16, top: 56, bottom: this.contentBottomPadding() })
+    .padding({
+      left: MeowSpacing.pagePadding,
+      right: MeowSpacing.pagePadding,
+      top: MeowSpacing.headerPaddingTop,
+      bottom: this.contentBottomPadding()
+    })
   }
 
   build() {
@@ -354,16 +366,17 @@ struct Home {
       .height('100%')
       .scrollable(ScrollDirection.Vertical)
       .scrollBar(BarState.Off)
-      .zIndex(1)
+      .zIndex(0)
 
-      Column() {
-        MiniPlayer()
-          .margin({ left: 14, right: 14, bottom: MeowSpacing.miniPlayerBottomMargin })
-        BottomNavBar({ activeTab: 'Home' })
-      }
-      .width('100%')
-      .zIndex(10)
-      .onClick(() => {})
+      MiniPlayer()
+        .margin({
+          left: 14,
+          right: 14,
+          bottom: MeowSpacing.bottomNavHeight + MeowSpacing.bottomNavBottomOffset + MeowSpacing.miniPlayerBottomMargin
+        })
+        .zIndex(20)
+      BottomNavBar({ activeTab: 'Home' })
+        .zIndex(30)
     }
     .width('100%')
     .height('100%')

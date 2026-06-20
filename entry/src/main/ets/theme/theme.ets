@@ -67,12 +67,23 @@ export class MeowSpacing {
   static readonly cardPaddingSmall: number = 20;
   static readonly pagePadding: number = 24;
   static readonly cardPadding: number = 28;
-  static readonly sectionGap: number = 30;
+  static readonly sectionGap: number = 28;
+  static readonly sectionTitleGap: number = 16;
   static readonly sectionGapLarge: number = 32;
-  static readonly bottomNavHeight: number = 66;
-  static readonly miniPlayerHeight: number = 80;
+  static readonly bottomNavWidthPercent: string = '86%';
+  static readonly bottomNavHeight: number = 60;
+  static readonly bottomNavRadius: number = 30;
+  static readonly bottomNavBottomOffset: number = 14;
+  static readonly bottomNavMaskHeight: number = 116;
+  static readonly tabItemWidth: number = 56;
+  static readonly tabItemHeight: number = 50;
+  static readonly tabActiveIconSize: number = 24;
+  static readonly tabInactiveIconSize: number = 22;
+  static readonly miniPlayerHeight: number = 76;
   static readonly miniPlayerBottomMargin: number = 10;
-  static readonly mainContentBottomPadding: number = 224;
+  static readonly bottomContentPaddingWithMiniPlayer: number = 180;
+  static readonly bottomContentPaddingTabOnly: number = 116;
+  static readonly mainContentBottomPadding: number = 180;
   static readonly playerContentBottomPadding: number = 80;
   static readonly iconGap: number = 5;
   static readonly rowGap: number = 14;
@@ -83,11 +94,12 @@ export class MeowSpacing {
 export class MeowRadius {
   static readonly chip: number = 8;
   static readonly control: number = 12;
-  static readonly card: number = 16;
+  static readonly card: number = 20;
   static readonly large: number = 24;
   static readonly pill: number = 26;
   static readonly chipPill: number = 20;
   static readonly icon: number = 22;
+  static readonly bottomSheet: number = 28;
 }
 
 export class MeowEffects {
@@ -98,6 +110,36 @@ export class MeowEffects {
   static readonly pressScale: number = 0.97;
   static readonly cardShadowRadius: number = 16;
   static readonly cardShadowOffset: number = 7;
+}
+
+export class MeowPlayer {
+  static readonly albumMinWidth: number = 220;
+  static readonly albumMaxWidth: number = 360;
+  static readonly albumWidthPercent: string = '90%';
+  static readonly albumPausedScale: number = 1.0;
+  static readonly albumPlayingScale: number = 1.04;
+  static readonly albumZoomDuration: number = 240;
+
+  static readonly addButtonSize: number = 44;
+  static readonly addIconSize: number = 20;
+
+  static readonly sideTap: number = 46;
+  static readonly sideIcon: number = 27;
+  static readonly skipTap: number = 50;
+  static readonly skipIcon: number = 32;
+  static readonly playTap: number = 60;
+  static readonly playIcon: number = 30;
+  static readonly pauseIcon: number = 26;
+
+  static readonly secondaryTap: number = 44;
+  static readonly secondaryIcon: number = 25;
+
+  static readonly miniCardHeight: number = 76;
+  static readonly miniCoverSize: number = 58;
+  static readonly miniActionTap: number = 40;
+  static readonly miniActionIcon: number = 23;
+  static readonly miniPlayTap: number = 46;
+  static readonly miniPlayIcon: number = 24;
 }
 
 export class MeowTypography {

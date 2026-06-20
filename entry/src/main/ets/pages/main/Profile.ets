@@ -5,6 +5,7 @@ import { DEFAULT_TRACK, MUSIC_TRACKS, Track } from '../../model/MusicData'
 import { PlayerManager } from '../../model/PlayerManager'
 import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme/theme'
 import { AudioEngine } from '../../model/AudioEngine'
+import { SheetHandle } from '../../components/SheetHandle'
 
 interface ProfileMenuEntry {
   id: number
@@ -319,7 +320,7 @@ struct Profile {
           .fontWeight(FontWeight.Bold)
           .fontColor(MeowColors.goldBright)
           .padding({ left: 12, right: 12, top: 5, bottom: 5 })
-          .borderRadius(12)
+          .borderRadius(MeowRadius.control)
           .backgroundColor('rgba(255,215,0,0.12)')
           .border({ width: 1, color: 'rgba(255,215,0,0.28)' })
 
@@ -501,7 +502,7 @@ struct Profile {
               .height(42)
               .borderRadius(21)
               .backgroundColor('rgba(255,255,255,0.06)')
-              .border({ width: 1, color: 'rgba(255,255,255,0.10)' })
+              .border({ width: 1, color: MeowColors.borderStrong })
             Text(entry.icon)
               .fontSize(16)
               .fontColor(entry.accent)
@@ -734,11 +735,7 @@ struct Profile {
   private EditProfileSheet() {
     Column({ space: 0 }) {
       Row() {
-        Row()
-          .width(36)
-          .height(4)
-          .borderRadius(2)
-          .backgroundColor('rgba(255,255,255,0.28)')
+        SheetHandle()
       }
       .width('100%')
       .height(26)
@@ -863,21 +860,9 @@ struct Profile {
     .width('100%')
     .padding({ left: 24, right: 24, top: 0, bottom: 48 })
     .backgroundColor(MeowColors.solidSurface)
-    .borderRadius({ topLeft: 28, topRight: 28, bottomLeft: 0, bottomRight: 0 })
+    .borderRadius({ topLeft: MeowRadius.bottomSheet, topRight: MeowRadius.bottomSheet, bottomLeft: 0, bottomRight: 0 })
     .border({ width: 1, color: 'rgba(255,255,255,0.08)' })
-    .zIndex(21)
-  }
-
-  @Builder
-  private BottomChrome() {
-    Column() {
-      MiniPlayer()
-        .margin({ left: 14, right: 14, bottom: MeowSpacing.miniPlayerBottomMargin })
-      BottomNavBar({ activeTab: 'Profile' })
-    }
-    .width('100%')
-    .zIndex(10)
-    .onClick(() => {})
+    .zIndex(101)
   }
 
   @Builder
@@ -903,7 +888,7 @@ struct Profile {
       })
     }
     .width('100%')
-    .padding({ bottom: MeowSpacing.mainContentBottomPadding + 24 })
+    .padding({ bottom: MeowSpacing.bottomContentPaddingWithMiniPlayer })
   }
 
   build() {
@@ -920,16 +905,24 @@ struct Profile {
       .height('100%')
       .scrollable(ScrollDirection.Vertical)
       .scrollBar(BarState.Off)
-      .zIndex(1)
+      .zIndex(0)
 
-      this.BottomChrome()
+      MiniPlayer()
+        .margin({
+          left: 14,
+          right: 14,
+          bottom: MeowSpacing.bottomNavHeight + MeowSpacing.bottomNavBottomOffset + MeowSpacing.miniPlayerBottomMargin
+        })
+        .zIndex(20)
+      BottomNavBar({ activeTab: 'Profile' })
+        .zIndex(30)
 
       if (this.showEditSheet) {
         Column()
           .width('100%')
           .height('100%')
           .backgroundColor('rgba(0,0,0,0.55)')
-          .zIndex(20)
+          .zIndex(100)
           .onClick(() => {
             this.showEditSheet = false
           })

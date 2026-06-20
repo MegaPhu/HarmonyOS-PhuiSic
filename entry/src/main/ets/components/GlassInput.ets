@@ -71,8 +71,8 @@ export struct GlassInput {
     .borderRadius(MeowRadius.pill)
     .backgroundColor(MeowColors.glassInputBg)
     .border({
-      width: this.focused ? 1.8 : 1.5,
-      color: this.focused ? MeowColors.goldBright : MeowColors.glassStroke
+      width: this.focused ? 1.5 : 1,
+      color: this.focused ? MeowColors.goldBright : MeowColors.borderStrong
     })
     .backdropBlur(MeowEffects.backdropBlur)
     .shadow({

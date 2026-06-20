@@ -10,15 +10,36 @@ import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme
 struct LanguageDetail {
   @StorageLink('likedTrackIds') private likedTrackIds: string = ''
   @State private language: string = 'Thai'
+  @State private mood: string = ''
 
   aboutToAppear(): void {
     const params = router.getParams() as Record<string, string>
     if (params && params['language'] && (params['language'] as string).length > 0) {
       this.language = params['language'] as string
     }
+    if (params && params['mood'] && (params['mood'] as string).length > 0) {
+      this.mood = params['mood'] as string
+    }
+  }
+
+  // Mood cards reuse this detail page (same UX as language cards). Mood mode
+  // filters by mood OR genre so 'Electronic' (a genre, not a mood) resolves.
+  private isMoodMode(): boolean {
+    return this.mood.length > 0
+  }
+
+  private headerTitle(): string {
+    return this.isMoodMode() ? this.mood : this.language
   }
 
   private gradientStart(): string {
+    if (this.isMoodMode()) {
+      if (this.mood === 'Romantic') { return '#7A2060' }
+      if (this.mood === 'Sad') { return '#204A7A' }
+      if (this.mood === 'Chill') { return '#1A5040' }
+      if (this.mood === 'Electronic') { return '#1A1A4A' }
+      return '#3A3A6A'
+    }
     if (this.language === 'Thai') { return '#5C2F8A' }
     if (this.language === 'Chinese') { return '#1A5C8A' }
     if (this.language === 'English') { return '#1A6647' }
@@ -29,6 +50,13 @@ struct LanguageDetail {
   }
 
   private gradientEnd(): string {
+    if (this.isMoodMode()) {
+      if (this.mood === 'Romantic') { return '#C45090' }
+      if (this.mood === 'Sad') { return '#4080C4' }
+      if (this.mood === 'Chill') { return '#38908A' }
+      if (this.mood === 'Electronic') { return '#4040A0' }
+      return '#6A6AAA'
+    }
     if (this.language === 'Thai') { return '#9160D8' }
     if (this.language === 'Chinese') { return '#3DA0D8' }
     if (this.language === 'English') { return '#3AB07A' }
@@ -39,6 +67,13 @@ struct LanguageDetail {
   }
 
   private langSubtitle(): string {
+    if (this.isMoodMode()) {
+      if (this.mood === 'Romantic') { return 'Love songs' }
+      if (this.mood === 'Sad') { return 'Emotional' }
+      if (this.mood === 'Chill') { return 'Relax & unwind' }
+      if (this.mood === 'Electronic') { return 'Beat & synth' }
+      return ''
+    }
     if (this.language === 'Thai') { return 'เพลงไทย' }
     if (this.language === 'Chinese') { return '华语音乐' }
     if (this.language === 'English') { return 'English tracks' }
@@ -49,12 +84,16 @@ struct LanguageDetail {
   }
 
   private languageTracks(): Track[] {
+    if (this.isMoodMode()) {
+      const m = this.mood
+      return MUSIC_TRACKS.filter((t: Track): boolean => t.mood === m || t.genre === m)
+    }
     const lang = this.language
     return MUSIC_TRACKS.filter((t: Track): boolean => t.language === lang)
   }
 
   private contentBottomPadding(): number {
-    return MeowSpacing.mainContentBottomPadding + 24
+    return MeowSpacing.bottomContentPaddingWithMiniPlayer
   }
 
   private async openTrack(track: Track): Promise<void> {
@@ -109,7 +148,7 @@ struct LanguageDetail {
             .fontSize(13)
             .fontColor('rgba(255,255,255,0.72)')
             .fontWeight(FontWeight.Medium)
-          Text(this.language)
+          Text(this.headerTitle())
             .fontSize(48)
             .fontWeight(FontWeight.Bold)
             .fontColor(MeowColors.textPrimary)
@@ -284,7 +323,7 @@ struct LanguageDetail {
       Text('No tracks available')
         .fontSize(MeowTypography.bodySize)
         .fontColor(MeowColors.textTertiary)
-      Text('Explore other languages')
+      Text('Explore other categories')
         .fontSize(MeowTypography.captionSize)
         .fontColor(MeowColors.textTertiary)
         .textAlign(TextAlign.Center)
@@ -313,18 +352,6 @@ struct LanguageDetail {
     .padding({ bottom: this.contentBottomPadding() })
   }
 
-  @Builder
-  private BottomChrome() {
-    Column() {
-      MiniPlayer()
-        .margin({ left: 14, right: 14, bottom: MeowSpacing.miniPlayerBottomMargin })
-      BottomNavBar({ activeTab: 'Search' })
-    }
-    .width('100%')
-    .zIndex(10)
-    .onClick(() => {})
-  }
-
   build() {
     Stack({ alignContent: Alignment.Bottom }) {
       Column()
@@ -339,9 +366,17 @@ struct LanguageDetail {
       .height('100%')
       .scrollable(ScrollDirection.Vertical)
       .scrollBar(BarState.Off)
-      .zIndex(1)
+      .zIndex(0)
 
-      this.BottomChrome()
+      MiniPlayer()
+        .margin({
+          left: 14,
+          right: 14,
+          bottom: MeowSpacing.bottomNavHeight + MeowSpacing.bottomNavBottomOffset + MeowSpacing.miniPlayerBottomMargin
+        })
+        .zIndex(20)
+      BottomNavBar({ activeTab: 'Search' })
+        .zIndex(30)
     }
     .width('100%')
     .height('100%')

@@ -12,6 +12,9 @@ export class AudioEngine {
   private static seekedTo: number = -1
   private static playStartTime: number = -1
   private static playStartSecs: number = 0
+  // Re-entry guard so end-of-track advances exactly once even if both the
+  // AVPlayer 'completed' event and the wall-clock fallback fire together.
+  private static completing: boolean = false
 
   static init(ctx: common.UIAbilityContext): void {
     AudioEngine.context = ctx
@@ -81,6 +84,8 @@ export class AudioEngine {
             console.error('[AudioEngine] play error:', e.message)
           })
         } else if (state === 'playing') {
+          // New track is actually playing — release the completion guard.
+          AudioEngine.completing = false
           AppStorage.setOrCreate<boolean>('isPlaying', true)
           if (AudioEngine.tracking) {
             AudioEngine.startPositionTimer()
@@ -93,6 +98,7 @@ export class AudioEngine {
           AudioEngine.handleCompletion()
         } else if (state === 'error') {
           AudioEngine.stopPositionTimer()
+          AudioEngine.completing = false
           AppStorage.setOrCreate<boolean>('isPlaying', false)
           AudioEngine.currentSrc = ''
           console.error('[AudioEngine] player entered error state')
@@ -229,9 +235,41 @@ export class AudioEngine {
       if (AudioEngine.playStartTime < 0) {
         return
       }
+      // Prefer the real decoder clock whenever a live player is available so
+      // progress and lyrics stay locked to the actual audio and absorb any
+      // buffering stalls. Re-anchor the wall clock to the real position each
+      // tick so the fallback below continues smoothly if currentTime drops to
+      // 0 momentarily. Fall back to the wall clock when no real player exists
+      // (e.g. DevEco Previewer, which produces no audio).
+      const player = AudioEngine.avPlayer
+      if (player !== null) {
+        const ms: number = player.currentTime
+        if (ms > 0) {
+          const realSecs: number = Math.floor(ms / 1000)
+          AudioEngine.playStartSecs = realSecs
+          AudioEngine.playStartTime = Date.now()
+          AppStorage.setOrCreate<number>('currentTimeSeconds', realSecs)
+          return
+        }
+      }
       const elapsed: number = Math.floor((Date.now() - AudioEngine.playStartTime) / 1000)
       const newSecs: number = AudioEngine.playStartSecs + elapsed
       AppStorage.setOrCreate<number>('currentTimeSeconds', newSecs)
+      // No live decoder clock (e.g. DevEco Previewer, or progress dragged to
+      // the end with no audio): drive end-of-track from the wall clock so the
+      // shuffle/repeat/next logic still fires when the song reaches its
+      // duration. On a real device the AVPlayer 'completed' event handles this
+      // first; the guard keeps it from advancing twice.
+      const dur: number = (AppStorage.get<Track>('currentTrack') ?? DEFAULT_TRACK).duration
+      if (!AudioEngine.completing && dur > 0 && newSecs >= dur) {
+        AudioEngine.handleCompletion()
+        // Re-anchor so the freshly selected track counts from 0, and release the
+        // guard. On a silent player (Previewer) there is no 'playing' event to
+        // clear it, so doing it here lets the next song also auto-advance.
+        AudioEngine.playStartSecs = 0
+        AudioEngine.playStartTime = Date.now()
+        AudioEngine.completing = false
+      }
     }, 500)
   }
 
@@ -244,6 +282,11 @@ export class AudioEngine {
   }
 
   private static handleCompletion(): void {
+    if (AudioEngine.completing) {
+      return
+    }
+    AudioEngine.completing = true
+
     const track = AppStorage.get<Track>('currentTrack') ?? DEFAULT_TRACK
     const repeat = AppStorage.get<number>('repeatEnabled') ?? 0
     const shuffle = AppStorage.get<boolean>('shuffleEnabled') ?? false
@@ -252,8 +295,11 @@ export class AudioEngine {
     AudioEngine.currentSrc = ''
     AppStorage.setOrCreate<number>('currentTimeSeconds', 0)
 
+    // Repeat takes priority over shuffle: any active repeat state replays the
+    // current track from the start; else shuffle picks a random other track;
+    // else advance sequentially.
     let next: Track
-    if (repeat === 2) {
+    if (repeat > 0) {
       next = track
     } else if (shuffle) {
       const others = MUSIC_TRACKS.filter((t: Track): boolean => t.id !== track.id)

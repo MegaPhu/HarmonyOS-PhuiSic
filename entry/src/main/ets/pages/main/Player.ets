@@ -1,9 +1,10 @@
 import router from '@ohos.router'
 import { LyricsCard } from '../../components/LyricsCard'
+import { SheetHandle } from '../../components/SheetHandle'
 import { DEFAULT_TRACK, MUSIC_TRACKS, Track } from '../../model/MusicData'
 import { PlayerManager } from '../../model/PlayerManager'
 import { AudioEngine } from '../../model/AudioEngine'
-import { MeowColors, MeowRadius, MeowSpacing, MeowTypography } from '../../theme/theme'
+import { MeowColors, MeowPlayer, MeowRadius, MeowSpacing, MeowTypography } from '../../theme/theme'
 import pasteboard from '@ohos.pasteboard'
 import promptAction from '@ohos.promptAction'
 
@@ -32,7 +33,16 @@ struct Player {
   @State private dragPosition: number = 0
   @State private progressBarWidth: number = 0
   @State private playPressed: boolean = false
+  @State private prevPressed: boolean = false
+  @State private nextPressed: boolean = false
+  @State private shufflePressed: boolean = false
+  @State private repeatPressed: boolean = false
   @State private cachedLyrics: LyricLine[] = []
+  // Album artwork slide transition state (driven by animateTo on track change).
+  @State private coverShift: number = 0
+  @State private coverFade: number = 1
+  @State private coverScaleV: number = 1
+  private isCoverAnimating: boolean = false
   private prevTrackId: string = ''
   private lastTrackChangeMs: number = 0
 
@@ -65,14 +75,31 @@ struct Player {
     if (this.currentTrack.lyrics.length === 0 || this.currentTrack.timestamps.length === 0) {
       return -1
     }
-    let activeIndex = 0
+    let tsIndex = 0
     const elapsedMs = seconds * 1000
     for (let i = 0; i < this.currentTrack.timestamps.length; i++) {
       if (elapsedMs >= this.currentTrack.timestamps[i]) {
-        activeIndex = i
+        tsIndex = i
       }
     }
-    return Math.min(activeIndex, this.currentTrack.lyrics.length - 1)
+    // Timestamps are authored for sung lines only, while the lyrics array also
+    // holds blank spacer lines. Map the tsIndex-th timestamp to the tsIndex-th
+    // non-blank lyric so highlighting stays aligned when blanks are interleaved.
+    return this.lyricIndexForTimestamp(tsIndex)
+  }
+
+  private lyricIndexForTimestamp(tsIndex: number): number {
+    const lyrics = this.currentTrack.lyrics
+    let nonBlankSeen = -1
+    for (let i = 0; i < lyrics.length; i++) {
+      if (lyrics[i].trim().length > 0) {
+        nonBlankSeen++
+        if (nonBlankSeen === tsIndex) {
+          return i
+        }
+      }
+    }
+    return Math.min(tsIndex, lyrics.length - 1)
   }
 
   private resetPlaybackPosition(): void {
@@ -116,39 +143,67 @@ struct Player {
     console.log(`[PlayerPage] toggle ${this.currentTrack.title}`)
   }
 
-  private previousTrack(): void {
+  // Slide the album artwork when the track changes: the current cover slides
+  // out (next → left, previous → right) while fading/shrinking; the track is
+  // swapped while the cover is invisible; then the new cover drops onto the
+  // opposite side and slides into centre. dir = +1 for next, -1 for previous.
+  // While a slide is running (or within the debounce window) further taps are
+  // ignored, so rapid Next/Previous can never desync cover/title/lyrics.
+  private animatedTrackChange(dir: number, applyChange: () => void): void {
     const now = Date.now()
-    if (now - this.lastTrackChangeMs < 150) {
+    if (this.isCoverAnimating || now - this.lastTrackChangeMs < 220) {
       return
     }
     this.lastTrackChangeMs = now
-    this.shuffleEnabled = false
-    this.repeatEnabled = 0
-    PlayerManager.playPrevious(this.currentTrack, this.isPlaying)
-    this.resetPlaybackPosition()
-    this.lyricsExpanded = false
-    console.log('[PlayerPage] previous track')
+    this.isCoverAnimating = true
+    const dist = 44
+    // Phase 1 — current cover slides out + fades + shrinks.
+    animateTo({ duration: 130, curve: Curve.EaseIn, onFinish: () => {
+      applyChange()
+      this.resetPlaybackPosition()
+      this.lyricsExpanded = false
+      // Drop the (now swapped) cover on the opposite side, invisibly.
+      animateTo({ duration: 0 }, () => {
+        this.coverShift = dir * dist
+      })
+      // Phase 2 — new cover slides in to centre + fades + grows.
+      animateTo({ duration: 210, curve: Curve.EaseOut, onFinish: () => {
+        this.isCoverAnimating = false
+      } }, () => {
+        this.coverShift = 0
+        this.coverFade = 1
+        this.coverScaleV = 1
+      })
+    } }, () => {
+      this.coverShift = -dir * dist
+      this.coverFade = 0
+      this.coverScaleV = 0.96
+    })
+  }
+
+  private previousTrack(): void {
+    this.animatedTrackChange(-1, () => {
+      this.shuffleEnabled = false
+      this.repeatEnabled = 0
+      PlayerManager.playPrevious(this.currentTrack, this.isPlaying)
+      console.log('[PlayerPage] previous track')
+    })
   }
 
   private nextTrack(): void {
-    const now = Date.now()
-    if (now - this.lastTrackChangeMs < 150) {
-      return
-    }
-    this.lastTrackChangeMs = now
-    if (this.shuffleEnabled) {
-      const next = PlayerManager.shuffledNextTrack(this.currentTrack)
-      this.shuffleEnabled = false
-      this.repeatEnabled = 0
-      PlayerManager.setCurrentTrack(next, this.isPlaying)
-    } else {
-      this.shuffleEnabled = false
-      this.repeatEnabled = 0
-      PlayerManager.playNext(this.currentTrack, this.isPlaying)
-    }
-    this.resetPlaybackPosition()
-    this.lyricsExpanded = false
-    console.log('[PlayerPage] next track')
+    this.animatedTrackChange(1, () => {
+      if (this.shuffleEnabled) {
+        const next = PlayerManager.shuffledNextTrack(this.currentTrack)
+        this.shuffleEnabled = false
+        this.repeatEnabled = 0
+        PlayerManager.setCurrentTrack(next, this.isPlaying)
+      } else {
+        this.shuffleEnabled = false
+        this.repeatEnabled = 0
+        PlayerManager.playNext(this.currentTrack, this.isPlaying)
+      }
+      console.log('[PlayerPage] next track')
+    })
   }
 
   private toggleLike(): void {
@@ -263,13 +318,14 @@ struct Player {
 
   @Builder
   private CoverStage() {
-    Stack({ alignContent: Alignment.Center }) {
-      Row()
-        .width('100%')
-        .aspectRatio(1)
-        .borderRadius(MeowRadius.large)
-        .backgroundColor(MeowColors.glassBgSoft)
-        .border({ width: 1, color: 'rgba(255,255,255,0.08)' })
+    Row() {
+      Stack({ alignContent: Alignment.Center }) {
+        Row()
+          .width('100%')
+          .aspectRatio(1)
+          .borderRadius(MeowRadius.large)
+          .backgroundColor(MeowColors.glassBgSoft)
+          .border({ width: 1, color: 'rgba(255,255,255,0.08)' })
 
       Image(this.currentTrack.artwork)
         .width('100%')
@@ -277,52 +333,59 @@ struct Player {
         .objectFit(ImageFit.Cover)
         .borderRadius(MeowRadius.large)
         .clip(true)
+        .translate({ x: this.coverShift })
+        .scale({ x: this.coverScaleV, y: this.coverScaleV })
+        .opacity(this.coverFade)
+      }
+      .width(MeowPlayer.albumWidthPercent)
+      .constraintSize({ minWidth: MeowPlayer.albumMinWidth, maxWidth: MeowPlayer.albumMaxWidth })
+      .aspectRatio(1)
+      .borderRadius(MeowRadius.large)
+      .shadow({
+        radius: 28,
+        color: this.currentTrack.accentSoft,
+        offsetX: 0,
+        offsetY: 10
+      })
+      .scale({
+        x: this.isPlaying ? MeowPlayer.albumPlayingScale : MeowPlayer.albumPausedScale,
+        y: this.isPlaying ? MeowPlayer.albumPlayingScale : MeowPlayer.albumPausedScale
+      })
+      .animation({ duration: MeowPlayer.albumZoomDuration, curve: Curve.EaseOut })
+      .parallelGesture(
+        PanGesture({ direction: PanDirection.Horizontal, distance: 44 })
+          .onActionEnd((event: GestureEvent) => {
+            if (event.offsetX <= -48) {
+              this.nextTrack()
+            } else if (event.offsetX >= 48) {
+              this.previousTrack()
+            }
+          })
+      )
     }
     .width('100%')
-    .aspectRatio(1)
-    .borderRadius(MeowRadius.large)
-    .shadow({
-      radius: 28,
-      color: this.currentTrack.accentSoft,
-      offsetX: 0,
-      offsetY: 10
-    })
-    .scale({
-      x: this.isPlaying ? 1 : 0.85,
-      y: this.isPlaying ? 1 : 0.85
-    })
-    .animation({ duration: 450, curve: Curve.Friction })
-    .parallelGesture(
-      PanGesture({ direction: PanDirection.Horizontal, distance: 44 })
-        .onActionEnd((event: GestureEvent) => {
-          if (event.offsetX <= -48) {
-            this.nextTrack()
-          } else if (event.offsetX >= 48) {
-            this.previousTrack()
-          }
-        })
-    )
+    .justifyContent(FlexAlign.Center)
   }
 
   @Builder
   private AddLibraryIcon() {
     Stack({ alignContent: Alignment.Center }) {
       Circle()
-        .width(38)
-        .height(38)
-        .fill(this.currentTrackLiked() ? this.currentTrack.accentSoft : 'transparent')
-        .stroke(this.currentTrackLiked() ? this.currentTrack.accent : 'rgba(255,255,255,0.44)')
-        .strokeWidth(1.8)
+        .width(MeowPlayer.addButtonSize - 4)
+        .height(MeowPlayer.addButtonSize - 4)
+        .fill(this.currentTrackLiked() ? this.currentTrack.accentSoft : 'rgba(255,255,255,0.04)')
+        .stroke(this.currentTrackLiked() ? this.currentTrack.accent : 'rgba(255,255,255,0.55)')
+        .strokeWidth(1)
         .hitTestBehavior(HitTestMode.None)
       Text(this.currentTrackLiked() ? '✓' : '+')
-        .fontSize(this.currentTrackLiked() ? 18 : 24)
+        .fontSize(MeowPlayer.addIconSize)
         .fontWeight(this.currentTrackLiked() ? FontWeight.Bold : FontWeight.Regular)
         .fontColor(this.currentTrackLiked() ? this.currentTrack.accent : MeowColors.textPrimary)
         .textAlign(TextAlign.Center)
         .hitTestBehavior(HitTestMode.None)
     }
-    .width(44)
-    .height(44)
+    .width(MeowPlayer.addButtonSize)
+    .height(MeowPlayer.addButtonSize)
     .hitTestBehavior(HitTestMode.Block)
     .onClick(() => {
       this.toggleLike()
@@ -334,13 +397,13 @@ struct Player {
     Row({ space: 14 }) {
       Column({ space: 5 }) {
         Text(this.currentTrack.title)
-          .fontSize(21)
+          .fontSize(26)
           .fontWeight(FontWeight.Bold)
           .fontColor(MeowColors.textPrimary)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
         Text(this.currentTrack.artist)
-          .fontSize(14)
+          .fontSize(15)
           .fontColor(MeowColors.textSecondary)
           .maxLines(1)
           .textOverflow({ overflow: TextOverflow.Ellipsis })
@@ -352,6 +415,7 @@ struct Player {
     }
     .width('100%')
     .alignItems(VerticalAlign.Center)
+    .padding({ right: 8 })
   }
 
   @Builder
@@ -362,7 +426,7 @@ struct Player {
           .width('100%')
           .height(4)
           .borderRadius(2)
-          .backgroundColor(MeowColors.borderGhost)
+          .backgroundColor('rgba(255,255,255,0.25)')
         Row() {
           Row()
             .width(this.progressPercent())
@@ -462,20 +526,35 @@ struct Player {
 
   @Builder
   private PlayPauseButton() {
+    // Primary — solid white circle with a dark glyph centred inside. The opaque
+    // circle is the tap target; a subtle circular shadow keeps it premium (no
+    // square/rectangular background).
     Stack({ alignContent: Alignment.Center }) {
-      Text(this.isPlaying ? 'Ⅱ' : '▶')
-        .fontSize(this.isPlaying ? 30 : 33)
-        .fontWeight(FontWeight.Bold)
-        .fontColor(MeowColors.textPrimary)
-        .textAlign(TextAlign.Center)
-        .translate({ x: this.isPlaying ? 0 : 2 })
+      Circle()
+        .width(MeowPlayer.playTap)
+        .height(MeowPlayer.playTap)
+        .fill(MeowColors.textPrimary)
+        .hitTestBehavior(HitTestMode.None)
         .shadow(this.playPressed
-          ? { radius: 14, color: this.currentTrack.accent, offsetX: 0, offsetY: 0 }
-          : { radius: 0, color: MeowColors.transparent, offsetX: 0, offsetY: 0 })
+          ? { radius: 16, color: this.currentTrack.accent, offsetX: 0, offsetY: 0 }
+          : { radius: 10, color: 'rgba(0,0,0,0.28)', offsetX: 0, offsetY: 4 })
+      if (this.isPlaying) {
+        // Pause — system symbol (correct proportions, no taper / no padding).
+        SymbolGlyph($r('sys.symbol.pause_fill'))
+          .fontSize(MeowPlayer.pauseIcon)
+          .fontColor([MeowColors.navyDeep])
+          .hitTestBehavior(HitTestMode.None)
+      } else {
+        // Play — system symbol (correct proportions, no taper / no padding).
+        SymbolGlyph($r('sys.symbol.play_fill'))
+          .fontSize(MeowPlayer.playIcon)
+          .fontColor([MeowColors.navyDeep])
+          .hitTestBehavior(HitTestMode.None)
+      }
     }
-    .width(56)
-    .height(56)
-    .scale({ x: this.playPressed ? 0.88 : 1, y: this.playPressed ? 0.88 : 1 })
+    .width(MeowPlayer.playTap)
+    .height(MeowPlayer.playTap)
+    .scale({ x: this.playPressed ? 0.93 : 1, y: this.playPressed ? 0.93 : 1 })
     .animation({ duration: 130, curve: Curve.EaseOut })
     .focusable(false)
     .hitTestBehavior(HitTestMode.Block)
@@ -496,77 +575,106 @@ struct Player {
     Row() {
       Stack({ alignContent: Alignment.Center }) {
         Column({ space: 3 }) {
-          Text('⇄')
-            .fontSize(25)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(this.shuffleEnabled ? this.currentTrack.accent : MeowColors.textSecondary)
-            .textAlign(TextAlign.Center)
+          Path()
+            .width(MeowPlayer.sideIcon)
+            .height(MeowPlayer.sideIcon)
+            .commands('M22.2 17.4 L4.8 0 L0 4.8 L17.4 22.2 L22.2 17.4 Z M35.4 0 L42.3 6.9 L0 49.2 L4.8 54 L47.1 11.7 L54 18.6 L54 0 L35.4 0 Z M36.6 31.5 L31.8 36.3 L42.4 46.8 L35.4 54 L54 54 L54 35.4 L47.1 42.3 L36.6 31.8 L36.6 31.5 Z')
+            .fill(this.shuffleEnabled ? this.currentTrack.accent : 'rgba(255,255,255,0.88)')
+            .stroke(MeowColors.transparent)
             .hitTestBehavior(HitTestMode.None)
           Row()
-            .width(5)
-            .height(5)
-            .borderRadius(2.5)
+            .width(6)
+            .height(6)
+            .borderRadius(3)
             .backgroundColor(this.shuffleEnabled ? this.currentTrack.accent : MeowColors.transparent)
             .hitTestBehavior(HitTestMode.None)
         }
         .alignItems(HorizontalAlign.Center)
         .hitTestBehavior(HitTestMode.None)
       }
-      .width(46)
-      .height(46)
+      .width(MeowPlayer.sideTap)
+      .height(MeowPlayer.sideTap)
+      .scale({ x: this.shufflePressed ? 0.94 : 1, y: this.shufflePressed ? 0.94 : 1 })
+      .animation({ duration: 130, curve: Curve.EaseOut })
       .hitTestBehavior(HitTestMode.Block)
+      .onTouch((event: TouchEvent) => {
+        if (event.type === TouchType.Down) {
+          this.shufflePressed = true
+        } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+          this.shufflePressed = false
+        }
+      })
       .onClick(() => { this.toggleShuffle() })
 
       Stack({ alignContent: Alignment.Center }) {
-        Text('‹')
-          .fontSize(25)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(MeowColors.textSecondary)
-          .textAlign(TextAlign.Center)
-          .opacity(0.84)
+        Path()
+          .width(MeowPlayer.skipIcon)
+          .height(MeowPlayer.skipIcon)
+          .commands('M0 0 L9.7 0 L9.7 58 L0 58 L0 0 Z M16.9 29 L58 58 L58 0 L16.9 29 Z')
+          .fill('rgba(255,255,255,0.95)')
+          .stroke(MeowColors.transparent)
           .hitTestBehavior(HitTestMode.None)
       }
-      .width(46)
-      .height(46)
+      .width(MeowPlayer.skipTap)
+      .height(MeowPlayer.skipTap)
+      .scale({ x: this.prevPressed ? 0.94 : 1, y: this.prevPressed ? 0.94 : 1 })
+      .animation({ duration: 120, curve: Curve.EaseOut })
       .hitTestBehavior(HitTestMode.Block)
+      .onTouch((event: TouchEvent) => {
+        if (event.type === TouchType.Down) {
+          this.prevPressed = true
+        } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+          this.prevPressed = false
+        }
+      })
       .onClick(() => { this.previousTrack() })
 
       this.PlayPauseButton()
 
       Stack({ alignContent: Alignment.Center }) {
-        Text('›')
-          .fontSize(25)
-          .fontWeight(FontWeight.Bold)
-          .fontColor(MeowColors.textSecondary)
-          .textAlign(TextAlign.Center)
-          .opacity(0.84)
+        Path()
+          .width(MeowPlayer.skipIcon)
+          .height(MeowPlayer.skipIcon)
+          .commands('M0 58 L41.1 29 L0 0 L0 58 Z M48.3 0 L48.3 58 L58 58 L58 0 L48.3 0 Z')
+          .fill('rgba(255,255,255,0.95)')
+          .stroke(MeowColors.transparent)
           .hitTestBehavior(HitTestMode.None)
       }
-      .width(46)
-      .height(46)
+      .width(MeowPlayer.skipTap)
+      .height(MeowPlayer.skipTap)
+      .scale({ x: this.nextPressed ? 0.94 : 1, y: this.nextPressed ? 0.94 : 1 })
+      .animation({ duration: 120, curve: Curve.EaseOut })
       .hitTestBehavior(HitTestMode.Block)
+      .onTouch((event: TouchEvent) => {
+        if (event.type === TouchType.Down) {
+          this.nextPressed = true
+        } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+          this.nextPressed = false
+        }
+      })
       .onClick(() => { this.nextTrack() })
 
       Stack({ alignContent: Alignment.Center }) {
         Column({ space: 2 }) {
-          Text('↻')
-            .fontSize(25)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(this.repeatEnabled > 0 ? this.currentTrack.accent : MeowColors.textSecondary)
-            .textAlign(TextAlign.Center)
+          Path()
+            .width(MeowPlayer.sideIcon)
+            .height(MeowPlayer.sideIcon)
+            .commands('M13.5 13.5 L40.5 13.5 L40.5 21.6 L51.3 10.8 L40.5 0 L40.5 8.1 L8.1 8.1 L8.1 24.3 L13.5 24.3 L13.5 13.5 Z M40.5 40.5 L13.5 40.5 L13.5 32.4 L2.7 43.2 L13.5 54 L13.5 45.9 L45.9 45.9 L45.9 29.7 L40.5 29.7 L40.5 40.5 Z')
+            .fill(this.repeatEnabled > 0 ? this.currentTrack.accent : 'rgba(255,255,255,0.88)')
+            .stroke(MeowColors.transparent)
             .hitTestBehavior(HitTestMode.None)
           if (this.repeatEnabled === 2) {
             Text('1')
-              .fontSize(9)
+              .fontSize(10)
               .fontWeight(FontWeight.Bold)
               .fontColor(this.currentTrack.accent)
               .textAlign(TextAlign.Center)
               .hitTestBehavior(HitTestMode.None)
           } else {
             Row()
-              .width(5)
-              .height(5)
-              .borderRadius(2.5)
+              .width(6)
+              .height(6)
+              .borderRadius(3)
               .backgroundColor(this.repeatEnabled === 1 ? this.currentTrack.accent : MeowColors.transparent)
               .hitTestBehavior(HitTestMode.None)
           }
@@ -574,51 +682,62 @@ struct Player {
         .alignItems(HorizontalAlign.Center)
         .hitTestBehavior(HitTestMode.None)
       }
-      .width(46)
-      .height(46)
+      .width(MeowPlayer.sideTap)
+      .height(MeowPlayer.sideTap)
+      .scale({ x: this.repeatPressed ? 0.94 : 1, y: this.repeatPressed ? 0.94 : 1 })
+      .animation({ duration: 130, curve: Curve.EaseOut })
       .hitTestBehavior(HitTestMode.Block)
+      .onTouch((event: TouchEvent) => {
+        if (event.type === TouchType.Down) {
+          this.repeatPressed = true
+        } else if (event.type === TouchType.Up || event.type === TouchType.Cancel) {
+          this.repeatPressed = false
+        }
+      })
       .onClick(() => { this.toggleRepeat() })
     }
-    .width('100%')
+    .width('96%')
+    .height(84)
     .alignItems(VerticalAlign.Center)
     .justifyContent(FlexAlign.SpaceBetween)
+    .alignSelf(ItemAlign.Center)
   }
 
   @Builder
   private ShareActionIcon() {
     Stack({ alignContent: Alignment.Center }) {
       Row()
-        .width(18)
+        .width(MeowPlayer.secondaryIcon - 5)
         .height(2)
         .borderRadius(1)
-        .backgroundColor(MeowColors.textSecondary)
+        .backgroundColor('rgba(255,255,255,0.88)')
         .rotate({ angle: -32 })
         .translate({ x: 0, y: -2 })
       Row()
-        .width(18)
+        .width(MeowPlayer.secondaryIcon - 5)
         .height(2)
         .borderRadius(1)
-        .backgroundColor(MeowColors.textSecondary)
+        .backgroundColor('rgba(255,255,255,0.88)')
         .rotate({ angle: 28 })
         .translate({ x: 0, y: 5 })
       Circle()
-        .width(6)
-        .height(6)
-        .fill(MeowColors.textSecondary)
+        .width(7)
+        .height(7)
+        .fill('rgba(255,255,255,0.88)')
         .translate({ x: -9, y: 7 })
       Circle()
-        .width(6)
-        .height(6)
-        .fill(MeowColors.textSecondary)
+        .width(7)
+        .height(7)
+        .fill('rgba(255,255,255,0.88)')
         .translate({ x: 8, y: -8 })
       Circle()
-        .width(6)
-        .height(6)
-        .fill(MeowColors.textSecondary)
+        .width(7)
+        .height(7)
+        .fill('rgba(255,255,255,0.88)')
         .translate({ x: 10, y: 9 })
     }
-    .width(44)
-    .height(44)
+    .width(MeowPlayer.secondaryTap)
+    .height(MeowPlayer.secondaryTap)
     .hitTestBehavior(HitTestMode.None)
   }
 
@@ -626,31 +745,31 @@ struct Player {
   private QueueActionIcon() {
     Stack({ alignContent: Alignment.Center }) {
       Row()
-        .width(22)
+        .width(MeowPlayer.secondaryIcon)
         .height(2.4)
         .borderRadius(1.2)
-        .backgroundColor(MeowColors.textSecondary)
+        .backgroundColor('rgba(255,255,255,0.88)')
         .translate({ x: 0, y: -7 })
       Row()
-        .width(22)
+        .width(MeowPlayer.secondaryIcon)
         .height(2.4)
         .borderRadius(1.2)
-        .backgroundColor(MeowColors.textSecondary)
+        .backgroundColor('rgba(255,255,255,0.88)')
       Row()
-        .width(22)
+        .width(MeowPlayer.secondaryIcon)
         .height(2.4)
         .borderRadius(1.2)
-        .backgroundColor(MeowColors.textSecondary)
+        .backgroundColor('rgba(255,255,255,0.88)')
         .translate({ x: 0, y: 7 })
     }
-    .width(44)
-    .height(44)
+    .width(MeowPlayer.secondaryTap)
+    .height(MeowPlayer.secondaryTap)
     .hitTestBehavior(HitTestMode.None)
   }
 
   @Builder
   private BottomAction(label: string, action: () => void) {
-    Column({ space: 3 }) {
+    Column() {
       if (label === 'Connect') {
         this.DeviceActionIcon()
       } else if (label === 'Share') {
@@ -658,15 +777,13 @@ struct Player {
       } else {
         this.QueueActionIcon()
       }
-
-      Text(label)
-        .fontSize(10)
-        .fontColor(MeowColors.textTertiary)
     }
     .width(72)
-    .height(62)
+    .height(56)
     .alignItems(HorizontalAlign.Center)
     .justifyContent(FlexAlign.Center)
+    .scale({ x: 1.0, y: 1.0 })
+    .opacity(0.88)
     .onClick(action)
   }
 
@@ -683,36 +800,36 @@ struct Player {
         this.showQueueSheet = true
       })
     }
-    .width('100%')
+    .width('84%')
     .height(62)
-    .padding({ left: 8, right: 8 })
     .alignItems(VerticalAlign.Center)
     .justifyContent(FlexAlign.SpaceBetween)
+    .alignSelf(ItemAlign.Center)
   }
 
   @Builder
   private DeviceActionIcon() {
     Stack({ alignContent: Alignment.Center }) {
       Row()
-        .width(16)
-        .height(22)
+        .width(MeowPlayer.secondaryIcon - 7)
+        .height(MeowPlayer.secondaryIcon)
         .borderRadius(4)
-        .border({ width: 2, color: MeowColors.textSecondary })
+        .border({ width: 2, color: 'rgba(255,255,255,0.88)' })
       Row()
         .width(5)
         .height(5)
         .borderRadius(3)
-        .backgroundColor(MeowColors.textSecondary)
+        .backgroundColor('rgba(255,255,255,0.88)')
         .translate({ x: 0, y: 7 })
       Row()
-        .width(12)
-        .height(16)
+        .width(MeowPlayer.secondaryIcon - 11)
+        .height(MeowPlayer.secondaryIcon - 7)
         .borderRadius(3)
-        .border({ width: 2, color: MeowColors.textSecondary })
+        .border({ width: 2, color: 'rgba(255,255,255,0.88)' })
         .translate({ x: -11, y: 4 })
     }
-    .width(44)
-    .height(44)
+    .width(MeowPlayer.secondaryTap)
+    .height(MeowPlayer.secondaryTap)
     .hitTestBehavior(HitTestMode.None)
   }
 
@@ -856,7 +973,7 @@ struct Player {
     .padding(20)
     .borderRadius(MeowRadius.card)
     .backgroundColor(MeowColors.surfaceOverlay)
-    .border({ width: 1, color: 'rgba(255,255,255,0.075)' })
+    .border({ width: 1, color: MeowColors.borderSubtle })
     .shadow({
       radius: 22,
       color: 'rgba(0,0,0,0.22)',
@@ -918,7 +1035,7 @@ struct Player {
   private MenuSheet() {
     Column({ space: 0 }) {
       Row() {
-        this.SheetHandle()
+        SheetHandle()
       }
       .width('100%')
       .height(26)
@@ -988,7 +1105,7 @@ struct Player {
     .width('100%')
     .padding({ left: 16, right: 16, top: 4, bottom: 36 })
     .backgroundColor(MeowColors.solidSurface)
-    .borderRadius({ topLeft: 24, topRight: 24, bottomLeft: 0, bottomRight: 0 })
+    .borderRadius({ topLeft: MeowRadius.bottomSheet, topRight: MeowRadius.bottomSheet, bottomLeft: 0, bottomRight: 0 })
     .border({ width: 1, color: MeowColors.borderSubtle })
   }
 
@@ -1027,15 +1144,6 @@ struct Player {
   }
 
   @Builder
-  private SheetHandle() {
-    Row()
-      .width(40)
-      .height(4)
-      .borderRadius(2)
-      .backgroundColor('rgba(255,255,255,0.22)')
-  }
-
-  @Builder
   private SheetTitleRow(title: string) {
     Text(title)
       .fontSize(MeowTypography.subheadingSize)
@@ -1048,7 +1156,7 @@ struct Player {
   private ConnectSheet() {
     Column({ space: 14 }) {
       Row() {
-        this.SheetHandle()
+        SheetHandle()
       }
       .width('100%')
       .height(26)
@@ -1133,7 +1241,7 @@ struct Player {
     .width('100%')
     .padding({ left: 16, right: 16, top: 4, bottom: 36 })
     .backgroundColor(MeowColors.solidSurface)
-    .borderRadius({ topLeft: 24, topRight: 24, bottomLeft: 0, bottomRight: 0 })
+    .borderRadius({ topLeft: MeowRadius.bottomSheet, topRight: MeowRadius.bottomSheet, bottomLeft: 0, bottomRight: 0 })
     .border({ width: 1, color: MeowColors.borderSubtle })
   }
 
@@ -1141,7 +1249,7 @@ struct Player {
   private ShareSheet() {
     Column({ space: 20 }) {
       Row() {
-        this.SheetHandle()
+        SheetHandle()
       }
       .width('100%')
       .height(26)
@@ -1286,7 +1394,7 @@ struct Player {
     .width('100%')
     .padding({ left: 20, right: 20, top: 4, bottom: 36 })
     .backgroundColor(MeowColors.solidSurface)
-    .borderRadius({ topLeft: 24, topRight: 24, bottomLeft: 0, bottomRight: 0 })
+    .borderRadius({ topLeft: MeowRadius.bottomSheet, topRight: MeowRadius.bottomSheet, bottomLeft: 0, bottomRight: 0 })
     .border({ width: 1, color: MeowColors.borderSubtle })
   }
 
@@ -1294,7 +1402,7 @@ struct Player {
   private QueueSheet() {
     Column({ space: 12 }) {
       Row() {
-        this.SheetHandle()
+        SheetHandle()
       }
       .width('100%')
       .height(26)
@@ -1340,13 +1448,32 @@ struct Player {
             .borderRadius(18)
             .backgroundColor(this.currentTrack.accent)
             .hitTestBehavior(HitTestMode.None)
-          Text(this.isPlaying ? 'Ⅱ' : '▶')
-            .fontSize(14)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(MeowColors.navyDeep)
-            .textAlign(TextAlign.Center)
-            .translate({ x: this.isPlaying ? 0 : 1 })
+          if (this.isPlaying) {
+            // Pause — two small vector bars (no glyph/emoji background)
+            Row({ space: 4 }) {
+              Column()
+                .width(3)
+                .height(12)
+                .borderRadius(1)
+                .backgroundColor(MeowColors.navyDeep)
+              Column()
+                .width(3)
+                .height(12)
+                .borderRadius(1)
+                .backgroundColor(MeowColors.navyDeep)
+            }
             .hitTestBehavior(HitTestMode.None)
+          } else {
+            // Play — small vector triangle (no glyph/emoji background)
+            Path()
+              .width(11)
+              .height(13)
+              .commands('M0 0 L11 6.5 L0 13 Z')
+              .fill(MeowColors.navyDeep)
+              .stroke(MeowColors.transparent)
+              .translate({ x: 1 })
+              .hitTestBehavior(HitTestMode.None)
+          }
         }
         .width(40)
         .height(40)
@@ -1423,7 +1550,7 @@ struct Player {
     .width('100%')
     .padding({ left: 16, right: 16, top: 4, bottom: 36 })
     .backgroundColor(MeowColors.solidSurface)
-    .borderRadius({ topLeft: 24, topRight: 24, bottomLeft: 0, bottomRight: 0 })
+    .borderRadius({ topLeft: MeowRadius.bottomSheet, topRight: MeowRadius.bottomSheet, bottomLeft: 0, bottomRight: 0 })
     .border({ width: 1, color: MeowColors.borderSubtle })
   }
 
@@ -1443,7 +1570,7 @@ struct Player {
         .hitTestBehavior(HitTestMode.None)
 
       Scroll() {
-        Column({ space: 18 }) {
+        Column({ space: 16 }) {
           this.TopBar()
           this.CoverStage()
           this.SongInfoRow()
@@ -1455,6 +1582,7 @@ struct Player {
               this.lyricsExpanded = !this.lyricsExpanded
             }
           })
+            .margin({ top: 28 })
           if (this.lyricsExpanded) {
             this.ExpandedLyrics(this.activeLyricIndex())
           }
@@ -1462,7 +1590,7 @@ struct Player {
           this.ExploreArtist()
         }
         .width('100%')
-        .padding({ left: 24, right: 24, top: 34, bottom: MeowSpacing.mainContentBottomPadding })
+        .padding({ left: 20, right: 20, top: 28, bottom: MeowSpacing.playerContentBottomPadding })
       }
       .width('100%')
       .height('100%')

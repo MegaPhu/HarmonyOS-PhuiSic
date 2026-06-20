@@ -19,7 +19,7 @@ struct Premium {
           .height(42)
           .borderRadius(21)
           .backgroundColor('rgba(255,255,255,0.07)')
-          .border({ width: 1, color: 'rgba(255,255,255,0.10)' })
+          .border({ width: 1, color: MeowColors.borderStrong })
         Text(icon)
           .fontSize(15)
           .fontWeight(FontWeight.Bold)
@@ -154,14 +154,15 @@ struct Premium {
       .scrollBar(BarState.Off)
       .zIndex(1)
 
-      Column() {
-        MiniPlayer()
-          .margin({ left: 14, right: 14, bottom: MeowSpacing.miniPlayerBottomMargin })
-        BottomNavBar({ activeTab: 'Premium' })
-      }
-      .width('100%')
-      .zIndex(10)
-      .hitTestBehavior(HitTestMode.Block)
+      MiniPlayer()
+        .margin({
+          left: 14,
+          right: 14,
+          bottom: MeowSpacing.bottomNavHeight + MeowSpacing.bottomNavBottomOffset + MeowSpacing.miniPlayerBottomMargin
+        })
+        .zIndex(20)
+      BottomNavBar({ activeTab: 'Premium' })
+        .zIndex(30)
     }
     .width('100%')
     .height('100%')
